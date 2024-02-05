@@ -213,11 +213,11 @@ public class VendorServiceImpl implements VendorService {
 	
 	public String viewOfShopkeeper(Shopkeeper shopkeeper) {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(String.format("%-15s: %-25s (%s)\n", "Name", shopkeeper.getName(), "Can't change"));
-		stringBuilder.append(String.format("%-15s: %-25s (%s)\n", "Contact", shopkeeper.getContact(), "Changable"));
-		stringBuilder.append(String.format("%-15s: %-25s (%s)\n", "Email", shopkeeper.getName(), "Changable"));
-		stringBuilder.append(String.format("%-15s: %-25s (%s)\n", "Username", shopkeeper.getUserName(), "Can't change"));
-		stringBuilder.append(String.format("%-15s: %-25s (%s)", "Password", "********", "Changable"));
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Name", shopkeeper.getName(), "Can't change"));
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Contact", shopkeeper.getContact(), "Changable"));
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Email", shopkeeper.getName(), "Changable"));
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Username", shopkeeper.getUserName(), "Can't change"));
+		stringBuilder.append("%-15s: %-25s (%s)".formatted("Password", "********", "Changable"));
 		
 		return stringBuilder.toString();
 	}
@@ -225,9 +225,9 @@ public class VendorServiceImpl implements VendorService {
 	public String viewOfProducts(Product product) {
 		StringBuilder stringBuilder = new StringBuilder();
 		if(!product.getBrand().isEmpty())
-			stringBuilder.append(String.format("%s\n", product.getBrand()));
+			stringBuilder.append("%s\n".formatted(product.getBrand()));
 		
-		stringBuilder.append(String.format("%s\n", product.getName()));
+		stringBuilder.append("%s\n".formatted(product.getName()));
 		
 		Double rating = product.getRating();
 		stringBuilder.append("●".repeat(rating.intValue()));
@@ -256,8 +256,10 @@ public class VendorServiceImpl implements VendorService {
 				contact.matches("^\\d{10}$"));
 		
 		Function<String, Boolean> emailCondition = (email) -> (
-				(email.matches("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@" +
-						"[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$")));
+				(email.matches("""
+                        ^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@\
+                        [^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$\
+                        """)));
 		
 		Function<String, Boolean> passwordCondition = (password) -> (
 				(password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$")));
@@ -268,15 +270,23 @@ public class VendorServiceImpl implements VendorService {
 		System.out.print("\nEnter Your First Name: ");
 		String firstName = scanner.nextLine().strip();
 		while(!nameCondition.apply(firstName)) {
-			System.out.print("\n\tName can only have characters.\n\n" +
-					"Enter a valid First Name: ");
+			System.out.print("""
+                    
+                    	Name can only have characters.
+                    
+                    Enter a valid First Name: \
+                    """);
 			firstName = scanner.nextLine().strip();
 		}
 		System.out.print("\nEnter Your Last Name: ");
 		String lastName = scanner.nextLine().strip();
 		while(!nameCondition.apply(lastName)) {
-			System.out.print("\n\tName can only have characters.\n\n" +
-					"Enter a valid Last Name: ");
+			System.out.print("""
+                    
+                    	Name can only have characters.
+                    
+                    Enter a valid Last Name: \
+                    """);
 			lastName = scanner.nextLine().strip();
 		}
 		String name = firstName.toLowerCase().replaceFirst("^[a-z]", firstName.substring(0, 1).toUpperCase())+
@@ -290,13 +300,17 @@ public class VendorServiceImpl implements VendorService {
 		System.out.print("\nEnter Your Email ID: ");
 		String email = scanner.nextLine().strip();
 		while(!emailCondition.apply(email)) {
-			System.out.print("\nThe following restrictions are imposed in the email address local part:\n"
-					+ "\t1. Dot isn’t allowed at the start and end of the local part.\n"
-					+ "\t2. Consecutive dots aren’t allowed.\n"
-					+ "\t3. A maximum of 64 characters are allowed.\n"
-					+ "Restrictions for the domain part in this regular expression include:\n"
-					+ "\t1. Hyphen “-” and dot “.” aren’t allowed at the start and end of the domain part.\r\n"
-					+ "\t2. No consecutive dots.\n\n");
+			System.out.print("""
+                    
+                    The following restrictions are imposed in the email address local part:
+                    	1. Dot isn’t allowed at the start and end of the local part.
+                    	2. Consecutive dots aren’t allowed.
+                    	3. A maximum of 64 characters are allowed.
+                    Restrictions for the domain part in this regular expression include:
+                    	1. Hyphen “-” and dot “.” aren’t allowed at the start and end of the domain part.
+                    	2. No consecutive dots.
+                    
+                    """);
 			System.out.print("Enter a valid Email ID: ");
 			email = scanner.nextLine().strip();
 		}
@@ -305,13 +319,18 @@ public class VendorServiceImpl implements VendorService {
 		System.out.print("\nEnter Your Password: ");
 		String password = scanner.nextLine().strip();
 		while(!passwordCondition.apply(password)) {
-			System.out.print("\nPassword must contain:\n" +
-					"\t1. At least one Special character.\n" +
-					"\t2. Minimun length of 8.\n" +
-					"\t3. At least one number.\n" +
-					"\t4. At least one lower and one upper cahracter.\n" +
-					"\t5. Does't contain space, tabs, etc.\n\n" +
-					"\nEnter a valid password: ");
+			System.out.print("""
+                    
+                    Password must contain:
+                    	1. At least one Special character.
+                    	2. Minimun length of 8.
+                    	3. At least one number.
+                    	4. At least one lower and one upper cahracter.
+                    	5. Does't contain space, tabs, etc.
+                    
+                    
+                    Enter a valid password: \
+                    """);
 			password = scanner.nextLine().strip();
 		}
 		
@@ -319,8 +338,11 @@ public class VendorServiceImpl implements VendorService {
 				email, userName, password);
 		String conformation;
 		while(result==0) {
-			System.out.print("\nIt seems like this Username already exists.\n" +
-					"Do you want to change the Username(Y) or Cancle(N): ");
+			System.out.print("""
+                    
+                    It seems like this Username already exists.
+                    Do you want to change the Username(Y) or Cancle(N): \
+                    """);
 			conformation = scanner.nextLine();
 			while(!(conformation.equalsIgnoreCase("N") || conformation.equalsIgnoreCase("Y"))) {
 				System.out.print("\nDo you want to change the Username(Y) or Cancle(N): ");
@@ -352,9 +374,12 @@ public class VendorServiceImpl implements VendorService {
 		result = vendorRepository.shopkeeperLogin(userName, password);
 		String conformation;
 		while(result==0) {
-			System.out.print("\n\tLogin Unsuccessful.\n" +
-					"\tPlease check your Username or Password\n" +
-					"Do you want to Retry(Y) or Cancle(N): ");
+			System.out.print("""
+                    
+                    	Login Unsuccessful.
+                    	Please check your Username or Password
+                    Do you want to Retry(Y) or Cancle(N): \
+                    """);
 			conformation = scanner.nextLine();
 			while(!(conformation.equalsIgnoreCase("N") || conformation.equalsIgnoreCase("Y"))) {
 				System.out.print("\nDo you want to Retry(Y) or Cancle(N): ");
@@ -433,8 +458,10 @@ public class VendorServiceImpl implements VendorService {
 				contact.matches("^\\d{10}$"));
 		
 		Function<String, Boolean> emailCondition = (email) -> (
-				(email.matches("^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@" +
-						"[^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$")));
+				(email.matches("""
+                        ^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@\
+                        [^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$\
+                        """)));
 		
 		Function<String, Boolean> passwordCondition = (password) -> (
 				(password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$")));
@@ -471,13 +498,17 @@ public class VendorServiceImpl implements VendorService {
 			System.out.print("\nEnter Your Email ID: ");
 			email = scanner.nextLine().strip();
 			while(!emailCondition.apply(email)) {
-				System.out.print("\nThe following restrictions are imposed in the email address local part:\n"
-						+ "\t1. Dot isn’t allowed at the start and end of the local part.\n"
-						+ "\t2. Consecutive dots aren’t allowed.\n"
-						+ "\t3. A maximum of 64 characters are allowed.\n"
-						+ "Restrictions for the domain part in this regular expression include:\n"
-						+ "\t1. Hyphen “-” and dot “.” aren’t allowed at the start and end of the domain part.\r\n"
-						+ "\t2. No consecutive dots.\n\n");
+				System.out.print("""
+                        
+                        The following restrictions are imposed in the email address local part:
+                        	1. Dot isn’t allowed at the start and end of the local part.
+                        	2. Consecutive dots aren’t allowed.
+                        	3. A maximum of 64 characters are allowed.
+                        Restrictions for the domain part in this regular expression include:
+                        	1. Hyphen “-” and dot “.” aren’t allowed at the start and end of the domain part.
+                        	2. No consecutive dots.
+                        
+                        """);
 				System.out.print("Enter a valid Email ID: ");
 				email = scanner.nextLine().strip();
 			}
@@ -500,13 +531,18 @@ public class VendorServiceImpl implements VendorService {
 			System.out.print("\nEnter Your New Password: ");
 			password = scanner.nextLine().strip();
 			while(!passwordCondition.apply(password)) {
-				System.out.print("\nPassword must contain:\n" +
-						"\t1. At least one Special character.\n" +
-						"\t2. Minimun length of 8.\n" +
-						"\t3. At least one number.\n" +
-						"\t4. At least one lower and one upper cahracter.\n" +
-						"\t5. Does't contain space, tabs, etc.\n\n" +
-						"\nEnter a valid password: ");
+				System.out.print("""
+                        
+                        Password must contain:
+                        	1. At least one Special character.
+                        	2. Minimun length of 8.
+                        	3. At least one number.
+                        	4. At least one lower and one upper cahracter.
+                        	5. Does't contain space, tabs, etc.
+                        
+                        
+                        Enter a valid password: \
+                        """);
 				password = scanner.nextLine().strip();
 			}
 			break;

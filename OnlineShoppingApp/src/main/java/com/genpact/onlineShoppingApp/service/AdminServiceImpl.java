@@ -36,7 +36,6 @@ import com.genpact.onlineShoppingApp.repository.AdminRepository;
 public class AdminServiceImpl implements AdminService {
 	@Autowired
 	private AdminRepository adminRepository;
-	
 	private ObjectMapper mapper = JsonMapper.builder()
 			.findAndAddModules()
 			.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
@@ -44,35 +43,129 @@ public class AdminServiceImpl implements AdminService {
 	
 	private Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
 	
+	@Override
+	@GetMapping("/customer/all/page={pageNumber}")
+	public ResponseEntity<String> getCustomers(@PathVariable Integer pageNumber) throws IOException {
+		Page<Customer> currentPage = adminRepository.getCustomers(pageNumber, 5);
+		List<Customer> customers = currentPage.getContent();
+		
+		if(customers.isEmpty())
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Customers available");
+		
+		customers.forEach(customer -> logger.info(solidBox(viewOfCustomer(customer)) + "\n"));
+		
+		String customersStr = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(customers);
+		
+		return ResponseEntity.ok(customersStr);
+		
+	}
+
+	@Override
+	@GetMapping("/shopkeeper/all/page={pageNumger}")
+	public ResponseEntity<String> getShopkeepers(@PathVariable Integer pageNumber) throws IOException {
+		Page<Shopkeeper> currentPage = adminRepository.getShopkeepers(pageNumber, 5);
+		List<Shopkeeper> shopkeepers = currentPage.getContent();
+		
+		if(shopkeepers.isEmpty())
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Shopkeepers available");
+		
+		shopkeepers.forEach(shopkeeper -> logger.info(solidBox(viewOfShopkeeper(shopkeeper)) + "\n"));
+		
+		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shopkeepers));
+		
+	}
+
+	@Override
+	@GetMapping("/payment/all/page={pageNumber}")
+	public ResponseEntity<String> getPayments(@PathVariable Integer pageNumber) throws IOException {
+		Page<Payment> currentPage = adminRepository.getPayments(pageNumber, 5);
+		List<Payment> payments = currentPage.getContent();
+		
+		if(payments.isEmpty())
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Payments available.");
+		
+		payments.forEach(payment -> logger.info(solidBox(viewOfPayment(payment))));
+		
+		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payments));
+	}
+	
+	@Override
+	@PostMapping("/payment/addNew")
+	public ResponseEntity<Payment> addNewPayment(@RequestBody Payment payment) throws InvalidSQLQueryException{
+		Function<String, Boolean> discountCondition = (stringDiscount) -> (
+				stringDiscount.matches("^(\\d{1,2})((\\.\\d{1,})?)$"));
+		
+		Payment savedpayment;
+		if(discountCondition.apply(String.valueOf(payment.getDiscount())))
+			savedpayment = adminRepository.addNewPayment(payment);
+		else
+			throw new InvalidInputException("Invalid discount");
+		
+		logger.info((savedpayment != null)?dotedBox("New method added successfully :)") :
+			dotedBox("This method alrady exist :("));
+		
+		return ResponseEntity.ok(savedpayment);
+		
+	}
+
+	@Override
+	@PutMapping("/payment/update")
+	public ResponseEntity<Payment> updateDiscountById(@RequestBody Payment payment) {
+		Function<String, Boolean> discountCondition = (stringDiscount) -> (
+				stringDiscount.matches("^(\\d{1,2})((\\.\\d{1,})?)$"));
+		
+		Payment savedpayment;
+		if(discountCondition.apply(String.valueOf(payment.getDiscount())))
+			savedpayment = adminRepository.updateDiscountById(payment);
+		else
+			throw new InvalidInputException("Invalid discount");
+		
+		logger.info((savedpayment != null)?dotedBox("Discount updated successfully :)") :
+			dotedBox("This Id does't exist :("));
+		
+		return ResponseEntity.ok(savedpayment);
+	}
+	
+	@Override
+	@DeleteMapping("/payment/remove/id={id}")
+	public ResponseEntity<Payment> removePaymentById(@PathVariable Integer id){
+		Payment payment = adminRepository.removePaymentById(id);
+		
+		logger.info((payment != null)?dotedBox("Payment removed successfully :)") :
+			dotedBox("This Id does't exist :("));
+		
+		return ResponseEntity.ok(payment);
+	}
+	
 	public String viewOfShopkeeper(Shopkeeper shopkeeper) {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Name", shopkeeper.getName()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Contact", shopkeeper.getContact()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Email", shopkeeper.getName()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Username", shopkeeper.getUserName()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Password", "********"));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Name", shopkeeper.getName()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Contact", shopkeeper.getContact()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Email", shopkeeper.getName()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Username", shopkeeper.getUserName()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Password", "********"));
 		
 		return stringBuilder.toString();
 	}
 	
 	public String viewOfCustomer(Customer customer) {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Name", customer.getName()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Contact", customer.getContact()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "DOB", customer.getDob()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Email", customer.getEmail()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Address", customer.getAddress()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Username", customer.getUserName()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Password", "********"));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Name", customer.getName()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Contact", customer.getContact()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("DOB", customer.getDob()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Email", customer.getEmail()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Address", customer.getAddress()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Username", customer.getUserName()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Password", "********"));
 		
 		return stringBuilder.toString();
 	}
 	
 	public String viewOfPayment(Payment payment) {
 		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append(String.format("%-15s: %-25s\n", "ID", payment.getId()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Mode of Payment", payment.getMethod()));
-		stringBuilder.append(String.format("%-15s: %-25s\n", "Discount", payment.getDiscount()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("ID", payment.getId()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Mode of Payment", payment.getMethod()));
+		stringBuilder.append("%-15s: %-25s\n".formatted("Discount", payment.getDiscount()));
 		
 		return stringBuilder.toString();
 	}
@@ -265,100 +358,6 @@ public class AdminServiceImpl implements AdminService {
 		stringBuilder.append("+");
 		
 		return stringBuilder.toString();
-	}
-	
-	@Override
-	@GetMapping("/customer/all/page={pageNumber}")
-	public ResponseEntity<String> getCustomers(@PathVariable Integer pageNumber) throws IOException {
-		Page<Customer> currentPage = adminRepository.getCustomers(pageNumber, 5);
-		List<Customer> customers = currentPage.getContent();
-		
-		if(customers.isEmpty())
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Customers available");
-		
-		customers.forEach(customer -> logger.info(solidBox(viewOfCustomer(customer)) + "\n"));
-		
-		String customersStr = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(customers);
-		
-		return ResponseEntity.ok(customersStr);
-		
-	}
-
-	@Override
-	@GetMapping("/shopkeeper/all/page={pageNumger}")
-	public ResponseEntity<String> getShopkeepers(@PathVariable Integer pageNumber) throws IOException {
-		Page<Shopkeeper> currentPage = adminRepository.getShopkeepers(pageNumber, 5);
-		List<Shopkeeper> shopkeepers = currentPage.getContent();
-		
-		if(shopkeepers.isEmpty())
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Shopkeepers available");
-		
-		shopkeepers.forEach(shopkeeper -> logger.info(solidBox(viewOfShopkeeper(shopkeeper)) + "\n"));
-		
-		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shopkeepers));
-		
-	}
-
-	@Override
-	@GetMapping("/payment/all/page={pageNumber}")
-	public ResponseEntity<String> getPayments(@PathVariable Integer pageNumber) throws IOException {
-		Page<Payment> currentPage = adminRepository.getPayments(pageNumber, 5);
-		List<Payment> payments = currentPage.getContent();
-		
-		if(payments.isEmpty())
-			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Payments available.");
-		
-		payments.forEach(payment -> logger.info(solidBox(viewOfPayment(payment))));
-		
-		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payments));
-	}
-	
-	@Override
-	@PostMapping("/payment/addNew")
-	public ResponseEntity<Payment> addNewPayment(@RequestBody Payment payment) throws InvalidSQLQueryException{
-		Function<String, Boolean> discountCondition = (stringDiscount) -> (
-				stringDiscount.matches("^(\\d{1,2})((\\.\\d{1,})?)$"));
-		
-		Payment savedpayment;
-		if(discountCondition.apply(String.valueOf(payment.getDiscount())))
-			savedpayment = adminRepository.addNewPayment(payment);
-		else
-			throw new InvalidInputException("Invalid discount");
-		
-		logger.info((savedpayment != null)?dotedBox("New method added successfully :)") :
-			dotedBox("This method alrady exist :("));
-		
-		return ResponseEntity.ok(savedpayment);
-		
-	}
-
-	@Override
-	@PutMapping("/payment/update")
-	public ResponseEntity<Payment> updateDiscountById(@RequestBody Payment payment) {
-		Function<String, Boolean> discountCondition = (stringDiscount) -> (
-				stringDiscount.matches("^(\\d{1,2})((\\.\\d{1,})?)$"));
-		
-		Payment savedpayment;
-		if(discountCondition.apply(String.valueOf(payment.getDiscount())))
-			savedpayment = adminRepository.updateDiscountById(payment);
-		else
-			throw new InvalidInputException("Invalid discount");
-		
-		logger.info((savedpayment != null)?dotedBox("Discount updated successfully :)") :
-			dotedBox("This Id does't exist :("));
-		
-		return ResponseEntity.ok(savedpayment);
-	}
-	
-	@Override
-	@DeleteMapping("/payment/remove/id={id}")
-	public ResponseEntity<Payment> removePaymentById(@PathVariable Integer id){
-		Payment payment = adminRepository.removePaymentById(id);
-		
-		logger.info((payment != null)?dotedBox("Payment removed successfully :)") :
-			dotedBox("This Id does't exist :("));
-		
-		return ResponseEntity.ok(payment);
 	}
 	
 }

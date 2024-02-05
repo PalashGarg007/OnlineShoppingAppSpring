@@ -45,7 +45,6 @@ public class AdminRepositoryImpl implements AdminRepository {
 		} catch (Exception e) {
 			throw new InvalidSQLQueryException("Payment with the same method already exist.", e.getCause());
 		}
-		System.out.println("Still working...");
 		
 		return savedPayment;
 	}

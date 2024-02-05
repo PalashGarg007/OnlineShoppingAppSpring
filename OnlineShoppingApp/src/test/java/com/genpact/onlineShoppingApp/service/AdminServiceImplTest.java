@@ -36,7 +36,7 @@ import com.genpact.onlineShoppingApp.exception.InvalidSQLQueryException;
 import com.genpact.onlineShoppingApp.repository.AdminRepository;
 
 @ExtendWith(MockitoExtension.class)
-public class AdminServiceImplTest {
+class AdminServiceImplTest {
 	
 	@InjectMocks
 	AdminServiceImpl adminServiceImpl;
@@ -55,10 +55,10 @@ public class AdminServiceImplTest {
 	
 	@Mock
 	Page<Payment> mockPagePayment;
-	
-	@Test
-	@DisplayName("getCustomers: when database has customer to show.")
-	public void getCustomersTest() throws IOException {
+
+    @Test
+    @DisplayName("getCustomers: when database has customer to show.")
+    void getCustomersTest() throws IOException {
 		ObjectWriter objectWriter = mock(ObjectWriter.class);
 		@SuppressWarnings("unchecked")
 		List<Customer> customers = mock(List.class);
@@ -79,10 +79,10 @@ public class AdminServiceImplTest {
 				() -> assertNotNull(responseEntity.getBody())
 				);
 	}
-	
-	@Test
-	@DisplayName("getCustomers: when database has not customer to show.")
-	public void getCustomerTest2() throws IOException {
+
+    @Test
+    @DisplayName("getCustomers: when database has not customer to show.")
+    void getCustomerTest2() throws IOException {
 		when(adminRepository.getCustomers(anyInt(), anyInt())).thenReturn(mockPageCustomer);
 		when(mockPageCustomer.getContent()).thenReturn(Collections.emptyList());
 		
@@ -96,10 +96,10 @@ public class AdminServiceImplTest {
 				() -> assertNotNull(responseEntity.getBody())
 				);
 	}
-	
-	@Test
-	@DisplayName("getShopkeepers: when database has shopkeeper to show.")
-	public void getShopkeepersTest() throws IOException {
+
+    @Test
+    @DisplayName("getShopkeepers: when database has shopkeeper to show.")
+    void getShopkeepersTest() throws IOException {
 		ObjectWriter objectWriter = mock(ObjectWriter.class);
 		@SuppressWarnings("unchecked")
 		List<Shopkeeper> shopkeepers = mock(List.class);
@@ -116,10 +116,10 @@ public class AdminServiceImplTest {
 				() -> assertNotNull(responseEntity.getBody())
 				);
 	}
-	
-	@Test
-	@DisplayName("getShopkeepers: when database has no shopkeeper to show.")
-	public void getShopkeepersTest2() throws IOException {
+
+    @Test
+    @DisplayName("getShopkeepers: when database has no shopkeeper to show.")
+    void getShopkeepersTest2() throws IOException {
 		when(adminRepository.getShopkeepers(anyInt(), anyInt())).thenReturn(mockPageShopkeeper);
 		when(mockPageShopkeeper.getContent()).thenReturn(Collections.emptyList());
 		
@@ -131,9 +131,9 @@ public class AdminServiceImplTest {
 				);
 	}
 
-	@Test
-	@DisplayName("getPayments: when database has payment to show.")
-	public void getPaymentsTest() throws IOException {
+    @Test
+    @DisplayName("getPayments: when database has payment to show.")
+    void getPaymentsTest() throws IOException {
 		ObjectWriter objectWriter = mock(ObjectWriter.class);
 		@SuppressWarnings("unchecked")
 		List<Payment> payments = mock(List.class);
@@ -150,10 +150,10 @@ public class AdminServiceImplTest {
 				() -> assertNotNull(responseEntity.getBody())
 				);
 	}
-	
-	@Test
-	@DisplayName("getPayments: when database has no payment to show.")
-	public void getPaymentsTest2() throws IOException {
+
+    @Test
+    @DisplayName("getPayments: when database has no payment to show.")
+    void getPaymentsTest2() throws IOException {
 		when(adminRepository.getPayments(anyInt(), anyInt())).thenReturn(mockPagePayment);
 		when(mockPagePayment.getContent()).thenReturn(Collections.emptyList());
 		
@@ -165,20 +165,20 @@ public class AdminServiceImplTest {
 				);
 	}
 
-	@ParameterizedTest
-	@DisplayName("addNewPayment: Invalid discount")
-	@ValueSource(doubles = {-0.1, 100.1})
-	public void addNewPaymentTest(Double discount) {
+    @ParameterizedTest
+    @DisplayName("addNewPayment: Invalid discount")
+    @ValueSource(doubles = {-0.1, 100.1})
+    void addNewPaymentTest(Double discount) {
 		Payment payment = mock(Payment.class);
 		
 		when(payment.getDiscount()).thenReturn(discount);
 		
 		assertThrows(InvalidInputException.class, ()-> adminServiceImpl.addNewPayment(payment));
 	}
-	
-	@Test
-	@DisplayName("addNewPayment: adding an new payment")
-	public void addNewPaymentTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException {
+
+    @Test
+    @DisplayName("addNewPayment: adding an new payment")
+    void addNewPaymentTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException {
 		Payment payment = mock(Payment.class);
 		
 		when(payment.getDiscount()).thenReturn(0.0);
