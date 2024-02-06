@@ -43,7 +43,11 @@ public class Shopkeeper {
         this.userName = userName;
         this.password = password;
     }
-
+    
+    public List<Product> getProducts(){
+    	return this.products;
+    }
+    
     public Integer getId() {
         return this.id;
     }

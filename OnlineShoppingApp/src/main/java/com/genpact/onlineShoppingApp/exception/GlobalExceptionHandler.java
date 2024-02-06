@@ -17,4 +17,8 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.body("[\"Error\": \""+ e.getMessage()+ "\"]");
 	}
+	
 }
+
+// exception mapper
+// web application application -> restful

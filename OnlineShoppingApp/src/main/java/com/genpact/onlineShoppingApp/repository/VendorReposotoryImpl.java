@@ -143,5 +143,9 @@ public class VendorReposotoryImpl implements VendorRepository{
 		
 		return result;
 	}
-
+	
+	@Override
+	public List<Product> inventoryList() {
+		return currentShopkeeper.getProducts();
+	}
 }

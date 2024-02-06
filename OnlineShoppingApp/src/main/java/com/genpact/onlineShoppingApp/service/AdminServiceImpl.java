@@ -36,6 +36,7 @@ import com.genpact.onlineShoppingApp.repository.AdminRepository;
 public class AdminServiceImpl implements AdminService {
 	@Autowired
 	private AdminRepository adminRepository;
+	
 	private ObjectMapper mapper = JsonMapper.builder()
 			.findAndAddModules()
 			.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
@@ -91,7 +92,7 @@ public class AdminServiceImpl implements AdminService {
 	
 	@Override
 	@PostMapping("/payment/addNew")
-	public ResponseEntity<Payment> addNewPayment(@RequestBody Payment payment) throws InvalidSQLQueryException{
+	public ResponseEntity<String> addNewPayment(@RequestBody Payment payment) throws InvalidSQLQueryException, IOException{
 		Function<String, Boolean> discountCondition = (stringDiscount) -> (
 				stringDiscount.matches("^(\\d{1,2})((\\.\\d{1,})?)$"));
 		
@@ -104,13 +105,13 @@ public class AdminServiceImpl implements AdminService {
 		logger.info((savedpayment != null)?dotedBox("New method added successfully :)") :
 			dotedBox("This method alrady exist :("));
 		
-		return ResponseEntity.ok(savedpayment);
+		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(savedpayment));
 		
 	}
 
 	@Override
 	@PutMapping("/payment/update")
-	public ResponseEntity<Payment> updateDiscountById(@RequestBody Payment payment) {
+	public ResponseEntity<String> updateDiscountById(@RequestBody Payment payment) throws IOException {
 		Function<String, Boolean> discountCondition = (stringDiscount) -> (
 				stringDiscount.matches("^(\\d{1,2})((\\.\\d{1,})?)$"));
 		
@@ -123,18 +124,18 @@ public class AdminServiceImpl implements AdminService {
 		logger.info((savedpayment != null)?dotedBox("Discount updated successfully :)") :
 			dotedBox("This Id does't exist :("));
 		
-		return ResponseEntity.ok(savedpayment);
+		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(savedpayment));
 	}
 	
 	@Override
 	@DeleteMapping("/payment/remove/id={id}")
-	public ResponseEntity<Payment> removePaymentById(@PathVariable Integer id){
+	public ResponseEntity<String> removePaymentById(@PathVariable Integer id) throws IOException{
 		Payment payment = adminRepository.removePaymentById(id);
 		
 		logger.info((payment != null)?dotedBox("Payment removed successfully :)") :
 			dotedBox("This Id does't exist :("));
 		
-		return ResponseEntity.ok(payment);
+		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payment));
 	}
 	
 	public String viewOfShopkeeper(Shopkeeper shopkeeper) {

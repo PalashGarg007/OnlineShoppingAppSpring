@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,6 +49,9 @@ class AdminServiceImplTest {
 	ObjectMapper mapper;
 	
 	@Mock
+	ObjectWriter objectWriter;
+	
+	@Mock
 	Page<Customer> mockPageCustomer;
 	
 	@Mock
@@ -59,7 +63,6 @@ class AdminServiceImplTest {
     @Test
     @DisplayName("getCustomers: when database has customer to show.")
     void getCustomersTest() throws IOException {
-		ObjectWriter objectWriter = mock(ObjectWriter.class);
 		@SuppressWarnings("unchecked")
 		List<Customer> customers = mock(List.class);
 		
@@ -69,10 +72,6 @@ class AdminServiceImplTest {
 		when(objectWriter.writeValueAsString(anyList())).thenReturn("Mock list");
 		
 		ResponseEntity<String> responseEntity = adminServiceImpl.getCustomers(1);
-		
-//		verify(adminRepository, times(1)).getCustomers(Integer.valueOf(anyInt()), anyInt());
-//		verify(mapper).writerWithDefaultPrettyPrinter();
-//		verify(objectWriter).writeValueAsString(anyList());
 		
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
@@ -85,9 +84,6 @@ class AdminServiceImplTest {
     void getCustomerTest2() throws IOException {
 		when(adminRepository.getCustomers(anyInt(), anyInt())).thenReturn(mockPageCustomer);
 		when(mockPageCustomer.getContent()).thenReturn(Collections.emptyList());
-		
-//		verify(adminRepository, times(1)).getCustomers(anyInt(), anyInt());
-//		verify(mapper.writerWithDefaultPrettyPrinter(), times(1)).writeValueAsString(anyString());
 
 		ResponseEntity<String> responseEntity = adminServiceImpl.getCustomers(1);
 
@@ -100,7 +96,6 @@ class AdminServiceImplTest {
     @Test
     @DisplayName("getShopkeepers: when database has shopkeeper to show.")
     void getShopkeepersTest() throws IOException {
-		ObjectWriter objectWriter = mock(ObjectWriter.class);
 		@SuppressWarnings("unchecked")
 		List<Shopkeeper> shopkeepers = mock(List.class);
 		
@@ -134,7 +129,6 @@ class AdminServiceImplTest {
     @Test
     @DisplayName("getPayments: when database has payment to show.")
     void getPaymentsTest() throws IOException {
-		ObjectWriter objectWriter = mock(ObjectWriter.class);
 		@SuppressWarnings("unchecked")
 		List<Payment> payments = mock(List.class);
 		
@@ -178,19 +172,69 @@ class AdminServiceImplTest {
 
     @Test
     @DisplayName("addNewPayment: adding an new payment")
-    void addNewPaymentTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException {
+    void addNewPaymentTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException, IOException {
 		Payment payment = mock(Payment.class);
+		String paymentString = null;
 		
 		when(payment.getDiscount()).thenReturn(0.0);
 		when(adminRepository.addNewPayment(payment)).thenReturn(payment);
-//		doThrow(new InvalidSQLQueryException(anyString())).when(adminRepository).addNewPayment(payment);
+		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
 		
-		ResponseEntity<Payment> responseEntity = adminServiceImpl.addNewPayment(payment);
+		ResponseEntity<String> responseEntity = adminServiceImpl.addNewPayment(payment);
 		
 		assertAll(
 				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
-				() -> assertEquals(payment, responseEntity.getBody())
+				() -> assertEquals(paymentString, responseEntity.getBody())
 				);
-		
 	}
+    
+    @ParameterizedTest
+    @DisplayName("updateDiscountById: Invalid discount")
+    @ValueSource(doubles = {-0.1, 100.1})
+    void updateDiscountByIdTest(Double discount) {
+		Payment payment = mock(Payment.class);
+		
+		when(payment.getDiscount()).thenReturn(discount);
+		
+		assertThrows(InvalidInputException.class, ()-> adminServiceImpl.updateDiscountById(payment));
+	}
+    
+    @Test
+    @DisplayName("updateDiscountById: adding an new payment")
+    void updateDiscountByIdTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException, IOException {
+		Payment payment = mock(Payment.class);
+		String paymentString = null;
+		
+		when(payment.getDiscount()).thenReturn(0.0);
+		when(adminRepository.updateDiscountById(payment)).thenReturn(payment);
+		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
+		
+		ResponseEntity<String> responseEntity = adminServiceImpl.updateDiscountById(payment);
+		
+		assertAll(
+				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+				() -> assertEquals(paymentString, responseEntity.getBody())
+				);
+	}
+    
+    @Test
+    @DisplayName("removePaymentById: removing the payment by given id.")
+    void removePaymentByIdTest() throws IOException {
+    	Payment payment = mock(Payment.class);
+    	String paymentString = null;
+    	
+    	when(adminRepository.removePaymentById(anyInt())).thenReturn(payment);
+    	when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
+		
+		ResponseEntity<String> responseEntity = adminServiceImpl.removePaymentById(anyInt());
+		
+		assertAll(
+				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+				() -> assertEquals(paymentString, responseEntity.getBody())
+				);
+    }
+    
 }

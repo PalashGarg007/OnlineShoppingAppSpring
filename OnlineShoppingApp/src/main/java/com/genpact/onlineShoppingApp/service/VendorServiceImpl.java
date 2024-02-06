@@ -15,238 +15,6 @@ public class VendorServiceImpl implements VendorService {
 	@Autowired
 	private VendorRepository vendorRepository;
 	
-	public String dotedBox(String string, Integer width) {
-		if(width<7)
-			width=7;
-		int maxStringLen = width-4;
-		
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		stringBuilder.append("\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("* ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" *\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" *\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		
-		return stringBuilder.toString();
-	}
-
-	public String dotedBox(String string) {
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		int maxStringLen = lines.get(0).length();
-		for(int i=1; i<lines.size(); i++) {
-			if(maxStringLen<lines.get(i).length())
-				maxStringLen = lines.get(i).length();
-		}
-		int width = maxStringLen + 4;
-		
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		stringBuilder.append("\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("* ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" *\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" *\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		
-		return stringBuilder.toString();
-	}
-	
-	public String solidBox(String string, Integer width) {
-		if(width<7)
-			width=7;
-		int maxStringLen = width-4;
-		
-		StringBuilder stringBuilder = new StringBuilder("+");
-		List<String> lines = string.lines().toList();
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("| ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" |\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" |\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		stringBuilder.append("+");
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+");
-		
-		return stringBuilder.toString();
-	}
-	
-	public String solidBox(String string) {
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		int maxStringLen = lines.get(0).length();
-		for(int i=1; i<lines.size(); i++) {
-			if(maxStringLen<lines.get(i).length())
-				maxStringLen = lines.get(i).length();
-		}
-		int width = maxStringLen + 4;
-		
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("| ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" |\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" |\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		stringBuilder.append("+");
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+");
-		
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfUnaccepetedOrders(Object object) {
-		StringBuilder stringBuilder = new StringBuilder();
-		//TODO:view of un-accepted orders.
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfShopkeeper(Shopkeeper shopkeeper) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Name", shopkeeper.getName(), "Can't change"));
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Contact", shopkeeper.getContact(), "Changable"));
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Email", shopkeeper.getName(), "Changable"));
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Username", shopkeeper.getUserName(), "Can't change"));
-		stringBuilder.append("%-15s: %-25s (%s)".formatted("Password", "********", "Changable"));
-		
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfProducts(Product product) {
-		StringBuilder stringBuilder = new StringBuilder();
-		if(!product.getBrand().isEmpty())
-			stringBuilder.append("%s\n".formatted(product.getBrand()));
-		
-		stringBuilder.append("%s\n".formatted(product.getName()));
-		
-		Double rating = product.getRating();
-		stringBuilder.append("●".repeat(rating.intValue()));
-		Integer partialRating = Double.valueOf((rating*100)%100).intValue();
-		if(partialRating>0 && partialRating<=25)
-			stringBuilder.append("◔");
-		else if(partialRating>25 && partialRating<=50)
-			stringBuilder.append("◑");
-		else if(partialRating>50 && partialRating<=75)
-			stringBuilder.append("◕");
-		stringBuilder.append("◌".repeat(5-rating.intValue()));
-		
-		stringBuilder.append(" " + product.getPurchased() + "\n");
-		
-		stringBuilder.append("₹" + product.getCost());
-		
-		return stringBuilder.toString();
-	}
-	
 	@Override
 	public void createAccount() {
 		Function<String, Boolean> nameCondition = (name) ->(
@@ -558,8 +326,246 @@ public class VendorServiceImpl implements VendorService {
 
 	@Override
 	public void setUnacceptedOrders() {
-		
-		
+		//ToDo:
 	}
 	
+	public String dotedBox(String string, Integer width) {
+		if(width<7)
+			width=7;
+		int maxStringLen = width-4;
+		
+		StringBuilder stringBuilder = new StringBuilder();
+		List<String> lines = string.lines().toList();
+		for (int i = 0; i < width; i++) {
+            stringBuilder.append("*");
+        }
+		stringBuilder.append("\n");
+		
+		for(String line: lines) {
+	        int remainingChars = line.length();
+	        int currentIndex = 0;
+
+	        while (remainingChars > 0) {
+	            stringBuilder.append("* ");
+	            int charsToPrint = Math.min(maxStringLen, remainingChars);
+	            
+	            if(charsToPrint!=maxStringLen) {
+	            	int padding = (maxStringLen - charsToPrint)/2;
+	            	stringBuilder.append(" ".repeat(padding));
+	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
+	            	stringBuilder.append(" *\n");
+	            	break;
+	            }
+	            
+	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
+
+	            stringBuilder.append(" *\n");
+
+	            currentIndex += charsToPrint;
+	            remainingChars -= charsToPrint;
+	        }
+		}
+		for (int i = 0; i < width; i++) {
+            stringBuilder.append("*");
+        }
+		
+		return stringBuilder.toString();
+	}
+
+	public String dotedBox(String string) {
+		StringBuilder stringBuilder = new StringBuilder();
+		List<String> lines = string.lines().toList();
+		int maxStringLen = lines.get(0).length();
+		for(int i=1; i<lines.size(); i++) {
+			if(maxStringLen<lines.get(i).length())
+				maxStringLen = lines.get(i).length();
+		}
+		int width = maxStringLen + 4;
+		
+		for (int i = 0; i < width; i++) {
+            stringBuilder.append("*");
+        }
+		stringBuilder.append("\n");
+		
+		for(String line: lines) {
+	        int remainingChars = line.length();
+	        int currentIndex = 0;
+
+	        while (remainingChars > 0) {
+	            stringBuilder.append("* ");
+	            int charsToPrint = Math.min(maxStringLen, remainingChars);
+	            
+	            if(charsToPrint!=maxStringLen) {
+	            	int padding = (maxStringLen - charsToPrint)/2;
+	            	stringBuilder.append(" ".repeat(padding));
+	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
+	            	stringBuilder.append(" *\n");
+	            	break;
+	            }
+	            
+	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
+
+	            stringBuilder.append(" *\n");
+
+	            currentIndex += charsToPrint;
+	            remainingChars -= charsToPrint;
+	        }
+		}
+		for (int i = 0; i < width; i++) {
+            stringBuilder.append("*");
+        }
+		
+		return stringBuilder.toString();
+	}
+	
+	public String solidBox(String string, Integer width) {
+		if(width<7)
+			width=7;
+		int maxStringLen = width-4;
+		
+		StringBuilder stringBuilder = new StringBuilder("+");
+		List<String> lines = string.lines().toList();
+		for (int i = 0; i < width-2; i++) {
+            stringBuilder.append("-");
+        }
+		stringBuilder.append("+\n");
+		
+		for(String line: lines) {
+	        int remainingChars = line.length();
+	        int currentIndex = 0;
+
+	        while (remainingChars > 0) {
+	            stringBuilder.append("| ");
+	            int charsToPrint = Math.min(maxStringLen, remainingChars);
+	            
+	            if(charsToPrint!=maxStringLen) {
+	            	int padding = (maxStringLen - charsToPrint)/2;
+	            	stringBuilder.append(" ".repeat(padding));
+	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
+	            	stringBuilder.append(" |\n");
+	            	break;
+	            }
+	            
+	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
+
+	            stringBuilder.append(" |\n");
+
+	            currentIndex += charsToPrint;
+	            remainingChars -= charsToPrint;
+	        }
+		}
+		stringBuilder.append("+");
+		for (int i = 0; i < width-2; i++) {
+            stringBuilder.append("-");
+        }
+		stringBuilder.append("+");
+		
+		return stringBuilder.toString();
+	}
+	
+	public String solidBox(String string) {
+		StringBuilder stringBuilder = new StringBuilder();
+		List<String> lines = string.lines().toList();
+		int maxStringLen = lines.get(0).length();
+		for(int i=1; i<lines.size(); i++) {
+			if(maxStringLen<lines.get(i).length())
+				maxStringLen = lines.get(i).length();
+		}
+		int width = maxStringLen + 4;
+		
+		for (int i = 0; i < width-2; i++) {
+            stringBuilder.append("-");
+        }
+		stringBuilder.append("+\n");
+		
+		for(String line: lines) {
+	        int remainingChars = line.length();
+	        int currentIndex = 0;
+
+	        while (remainingChars > 0) {
+	            stringBuilder.append("| ");
+	            int charsToPrint = Math.min(maxStringLen, remainingChars);
+	            
+	            if(charsToPrint!=maxStringLen) {
+	            	int padding = (maxStringLen - charsToPrint)/2;
+	            	stringBuilder.append(" ".repeat(padding));
+	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
+	            	stringBuilder.append(" |\n");
+	            	break;
+	            }
+	            
+	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
+	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
+
+	            stringBuilder.append(" |\n");
+
+	            currentIndex += charsToPrint;
+	            remainingChars -= charsToPrint;
+	        }
+		}
+		stringBuilder.append("+");
+		for (int i = 0; i < width-2; i++) {
+            stringBuilder.append("-");
+        }
+		stringBuilder.append("+");
+		
+		return stringBuilder.toString();
+	}
+	
+	public String viewOfUnaccepetedOrders(Object object) {
+		StringBuilder stringBuilder = new StringBuilder();
+		//TODO:view of un-accepted orders.
+		return stringBuilder.toString();
+	}
+	
+	public String viewOfShopkeeper(Shopkeeper shopkeeper) {
+		StringBuilder stringBuilder = new StringBuilder();
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Name", shopkeeper.getName(), "Can't change"));
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Contact", shopkeeper.getContact(), "Changable"));
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Email", shopkeeper.getName(), "Changable"));
+		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Username", shopkeeper.getUserName(), "Can't change"));
+		stringBuilder.append("%-15s: %-25s (%s)".formatted("Password", "********", "Changable"));
+		
+		return stringBuilder.toString();
+	}
+	
+	public String viewOfProducts(Product product) {
+		StringBuilder stringBuilder = new StringBuilder();
+		if(!product.getBrand().isEmpty())
+			stringBuilder.append("%s\n".formatted(product.getBrand()));
+		
+		stringBuilder.append("%s\n".formatted(product.getName()));
+		
+		Double rating = product.getRating();
+		stringBuilder.append("●".repeat(rating.intValue()));
+		Integer partialRating = Double.valueOf((rating*100)%100).intValue();
+		if(partialRating>0 && partialRating<=25)
+			stringBuilder.append("◔");
+		else if(partialRating>25 && partialRating<=50)
+			stringBuilder.append("◑");
+		else if(partialRating>50 && partialRating<=75)
+			stringBuilder.append("◕");
+		stringBuilder.append("◌".repeat(5-rating.intValue()));
+		
+		stringBuilder.append(" " + product.getPurchased() + "\n");
+		
+		stringBuilder.append("₹" + product.getCost());
+		
+		return stringBuilder.toString();
+	}
+	
+	public Double totalRevinue() {
+		List<Product> productList = vendorRepository.inventoryList();
+		Double revinue = productList.stream()
+				.map((product)-> product.getCost()*product.getPurchased())
+				.reduce(0.0, (sum, x) -> sum + x);
+		return revinue;
+	}
 }

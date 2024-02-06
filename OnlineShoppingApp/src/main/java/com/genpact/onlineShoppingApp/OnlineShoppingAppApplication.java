@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.service.AdminService;
 import com.genpact.onlineShoppingApp.service.VendorService;
 
@@ -70,5 +71,14 @@ public class OnlineShoppingAppApplication{
 		System.out.println(newStreamList);
 		newStreamList.forEach(x -> System.out.println(x));
 	}
+	
+	// Actual method available in VendorServiceImpl
+//	public Double totalRevinue() {
+//		List<Product> productList = vendorRepository.inventoryList();
+//		Double revinue = productList.stream()
+//				.map((product)-> product.getCost()*product.getPurchased())
+//				.reduce(0.0, (sum, x) -> sum + x);
+//		return revinue;
+//	}
 
 }

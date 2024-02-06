@@ -1,5 +1,7 @@
 package com.genpact.onlineShoppingApp.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 
 import com.genpact.onlineShoppingApp.entity.Orders;
@@ -33,6 +35,8 @@ public interface VendorRepository {
 	/*should be able to accept orders.*/
 	Page<Object> viewUnacceptedOrders(Integer pageNumber, Integer pageSize);
 	Integer setUnacceptedOrders(Orders orders, Boolean isAccepted);
+
+	List<Product> inventoryList();
 	
 	/*should be able to add products by file.*/
 	//TODO: create method add products by file.

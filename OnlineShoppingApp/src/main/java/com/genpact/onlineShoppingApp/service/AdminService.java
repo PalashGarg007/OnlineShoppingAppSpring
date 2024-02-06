@@ -16,14 +16,14 @@ public interface AdminService {
 	ResponseEntity<String> getShopkeepers(Integer pageNumber) throws IOException;
 	
 	/*Add new Payment method*/
-	ResponseEntity<Payment> addNewPayment(Payment payment) throws InvalidSQLQueryException;
+	ResponseEntity<String> addNewPayment(Payment payment) throws InvalidSQLQueryException, IOException;
 	
 	/*Display 5(default) payment at a time of given page*/
 	ResponseEntity<String> getPayments(Integer pageNumber) throws IOException;
 	
 	/*Update the discount by taking the payment_id*/
-	ResponseEntity<Payment> updateDiscountById(Payment payment);
+	ResponseEntity<String> updateDiscountById(Payment payment) throws IOException;
 	
 	/*Remove an Payment with it's id*/
-	ResponseEntity<Payment> removePaymentById(Integer id);
+	ResponseEntity<String> removePaymentById(Integer id) throws IOException;
 }
