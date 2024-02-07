@@ -11,11 +11,10 @@ import com.genpact.onlineShoppingApp.entity.Shopkeeper;
 public interface VendorRepository {
 	
 	/*create account.*/
-	Integer createAccount(String name, String contact,
-			String email, String userName, String password);
+	Shopkeeper createAccount(Shopkeeper shopkeeper);
 	
 	/*shopkeeper login.*/
-	Integer shopkeeperLogin(String userName, String password);
+	Shopkeeper shopkeeperLogin(String userName, String password);
 	
 	/*show Personal Details.*/
 	Shopkeeper getShopkeeper();

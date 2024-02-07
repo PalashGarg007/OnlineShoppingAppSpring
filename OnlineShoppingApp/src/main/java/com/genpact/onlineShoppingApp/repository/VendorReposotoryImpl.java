@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import com.genpact.onlineShoppingApp.entity.Orders;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
+import com.genpact.onlineShoppingApp.exception.InvalidInputException;
 import com.genpact.onlineShoppingApp.exception.OSAException;
 
 import jakarta.transaction.Transactional;
@@ -31,32 +32,25 @@ public class VendorReposotoryImpl implements VendorRepository{
 	
 	@Override
 	@Transactional
-	public Integer createAccount(String name, String contact,
-			String email, String userName, String password) {
-		int result = 0;
-		if(!shopkeeperRepository.findByUserName(userName).isEmpty())
-			return result;
-		else
-			result = 1;
+	public Shopkeeper createAccount(Shopkeeper shopkeeper) {
+		if(!shopkeeperRepository.findByUserName(shopkeeper.getUserName()).isEmpty())
+			throw new InvalidInputException("UserName already exist");
 		
-		Shopkeeper shopkeeper = new Shopkeeper(name, contact, email,
-	    		userName, password);
-		currentShopkeeper = shopkeeperRepository.save(shopkeeper);
+		Shopkeeper newShopkeeper = new Shopkeeper(shopkeeper.getName(), shopkeeper.getContact(),
+				shopkeeper.getEmail(), shopkeeper.getUserName(), shopkeeper.getPassword());
 		
-		return result;
+		currentShopkeeper = shopkeeperRepository.save(newShopkeeper);
+		
+		return currentShopkeeper;
 	}
 
 	@Override
-	public Integer shopkeeperLogin(String userName, String password) {
-		int result = 0;
+	public Shopkeeper shopkeeperLogin(String userName, String password) {
 		List<Shopkeeper> shopkeeperList = shopkeeperRepository.findByUserNameAndPassword(userName, password);
 		if(shopkeeperList.isEmpty())
-			return result;
+			throw new InvalidInputException("Invalid UserName or Password");
 		else
-			result = 1;
-		
-		currentShopkeeper = shopkeeperList.get(0);
-		return result;
+			return shopkeeperList.get(0);
 	}
 
 	@Override

@@ -1,24 +1,57 @@
 package com.genpact.onlineShoppingApp.service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
+import com.genpact.onlineShoppingApp.exception.InvalidInputException;
 import com.genpact.onlineShoppingApp.repository.VendorRepository;
 
+@RestController
+@RequestMapping("/shopkeeper")
 @Component
-public class VendorServiceImpl implements VendorService {
+public class VendorServiceImpl implements VendorService, Runnable {
 	@Autowired
 	private VendorRepository vendorRepository;
 	
+	private ObjectMapper mapper = JsonMapper.builder()
+			.findAndAddModules()
+			.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+			.build();
+	
+	private Logger logger = LoggerFactory.getLogger(VendorServiceImpl.class);
+	
+	private Views views;
+	
 	@Override
-	public void createAccount() {
+	public void run() {
+		//TODO:Write the run method for vendorRepositoryInpl
+	}
+	
+	@Override
+	@PostMapping("/newAccount")
+	public ResponseEntity<String> createAccount(@RequestBody Shopkeeper shopkeeper) throws IOException {
 		Function<String, Boolean> nameCondition = (name) ->(
-				name.matches("^[a-zA-Z]{1,}$"));
+				name.matches("^([a-zA-Z])(?([ ][a-zA-Z])){1,}$"));
 		
 		Function<String, Boolean> contactCondition = (contact) -> (
 				contact.matches("^\\d{10}$"));
@@ -32,44 +65,16 @@ public class VendorServiceImpl implements VendorService {
 		Function<String, Boolean> passwordCondition = (password) -> (
 				(password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$")));
 		
-		int result = 0;
-		@SuppressWarnings("resource")
-		Scanner scanner = new Scanner(System.in);
-		System.out.print("\nEnter Your First Name: ");
-		String firstName = scanner.nextLine().strip();
-		while(!nameCondition.apply(firstName)) {
-			System.out.print("""
-                    
-                    	Name can only have characters.
-                    
-                    Enter a valid First Name: \
-                    """);
-			firstName = scanner.nextLine().strip();
+		if(!nameCondition.apply(shopkeeper.getName())) {
+			throw new InvalidInputException("Name can only have characters.");
 		}
-		System.out.print("\nEnter Your Last Name: ");
-		String lastName = scanner.nextLine().strip();
-		while(!nameCondition.apply(lastName)) {
-			System.out.print("""
-                    
-                    	Name can only have characters.
-                    
-                    Enter a valid Last Name: \
-                    """);
-			lastName = scanner.nextLine().strip();
+		
+		if(!contactCondition.apply(shopkeeper.getContact())) {
+			throw new InvalidInputException("Enter a valid 10 digits Contact Number.");
 		}
-		String name = firstName.toLowerCase().replaceFirst("^[a-z]", firstName.substring(0, 1).toUpperCase())+
-				lastName.toLowerCase().replaceFirst("^[a-z]", lastName.substring(0, 1).toUpperCase());
-		System.out.print("\nEnter Your Contact Number: ");
-		String contact = scanner.nextLine().strip();
-		while(!contactCondition.apply(contact)) {
-			System.out.print("\nEnter a valid 10 digits Contact Number: ");
-			contact = scanner.nextLine().strip();
-		}
-		System.out.print("\nEnter Your Email ID: ");
-		String email = scanner.nextLine().strip();
-		while(!emailCondition.apply(email)) {
-			System.out.print("""
-                    
+		
+		if(!emailCondition.apply(shopkeeper.getEmail())) {
+			throw new InvalidInputException("""
                     The following restrictions are imposed in the email address local part:
                     	1. Dot isn’t allowed at the start and end of the local part.
                     	2. Consecutive dots aren’t allowed.
@@ -77,94 +82,48 @@ public class VendorServiceImpl implements VendorService {
                     Restrictions for the domain part in this regular expression include:
                     	1. Hyphen “-” and dot “.” aren’t allowed at the start and end of the domain part.
                     	2. No consecutive dots.
-                    
                     """);
-			System.out.print("Enter a valid Email ID: ");
-			email = scanner.nextLine().strip();
 		}
-		System.out.print("\nEnter Your Username: ");
-		String userName = scanner.nextLine().strip();
-		System.out.print("\nEnter Your Password: ");
-		String password = scanner.nextLine().strip();
-		while(!passwordCondition.apply(password)) {
-			System.out.print("""
-                    
+		
+		if(!passwordCondition.apply(shopkeeper.getPassword())) {
+			throw new InvalidInputException("""
                     Password must contain:
                     	1. At least one Special character.
                     	2. Minimun length of 8.
                     	3. At least one number.
                     	4. At least one lower and one upper cahracter.
                     	5. Does't contain space, tabs, etc.
-                    
-                    
-                    Enter a valid password: \
                     """);
-			password = scanner.nextLine().strip();
 		}
 		
-		result = vendorRepository.createAccount(name, contact,
-				email, userName, password);
-		String conformation;
-		while(result==0) {
-			System.out.print("""
-                    
-                    It seems like this Username already exists.
-                    Do you want to change the Username(Y) or Cancle(N): \
-                    """);
-			conformation = scanner.nextLine();
-			while(!(conformation.equalsIgnoreCase("N") || conformation.equalsIgnoreCase("Y"))) {
-				System.out.print("\nDo you want to change the Username(Y) or Cancle(N): ");
-				conformation = scanner.nextLine();
-			}
-			if(conformation.equalsIgnoreCase("N"))
-				break;
-			System.out.print("\nEnter Your Username: ");
-			userName = scanner.nextLine().strip();
-			result = vendorRepository.createAccount(name, contact,
-					email, userName, password);
-		}
-
-		System.out.println((result==1)?dotedBox("Account created successfully :)") :
-			dotedBox("Account can't be created successfully :("));
+		Shopkeeper result = vendorRepository.createAccount(shopkeeper);
+		String resultString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+		
+		logger.info((result!=null)?views.dotedBox("Account created successfully :)") :
+			views.dotedBox("Account can't be created successfully :("));
+		
+		if(result == null)
+			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(resultString);
+		
+		return ResponseEntity.ok(resultString);
 		
 	}
 
 	@Override
-	public void shopkeeperLogin() {
-		int result = 0;
-		@SuppressWarnings("resource")
-		Scanner scanner = new Scanner(System.in);
-		System.out.print("\nEnter Your Username: ");
-		String userName = scanner.nextLine().strip();
-		System.out.print("\nEnter Your Password: ");
-		String password = scanner.nextLine().strip();
+	@GetMapping("/logIn")
+	public ResponseEntity<String> shopkeeperLogin(@RequestBody String loginDetails) throws IOException {
+		Shopkeeper credintials = mapper.readValue(loginDetails, Shopkeeper.class);
+		//ToDo: Testing the above line.
 		
-		result = vendorRepository.shopkeeperLogin(userName, password);
-		String conformation;
-		while(result==0) {
-			System.out.print("""
-                    
-                    	Login Unsuccessful.
-                    	Please check your Username or Password
-                    Do you want to Retry(Y) or Cancle(N): \
-                    """);
-			conformation = scanner.nextLine();
-			while(!(conformation.equalsIgnoreCase("N") || conformation.equalsIgnoreCase("Y"))) {
-				System.out.print("\nDo you want to Retry(Y) or Cancle(N): ");
-				conformation = scanner.nextLine();
-			}
-			if(conformation.equalsIgnoreCase("N"))
-				break;
-			System.out.print("\nEnter Your Username: ");
-			userName = scanner.nextLine().strip();
-			System.out.print("\nEnter Your Password: ");
-			password = scanner.nextLine().strip();
-			
-			result = vendorRepository.shopkeeperLogin(userName, password);
-		}
+		Shopkeeper shopkeeper = vendorRepository.shopkeeperLogin(credintials.getUserName(), credintials.getPassword());
 		
-		System.out.println((result==1)?dotedBox("Login Successfully :)") :
-			dotedBox("Login Unsuccessfully :("));
+		logger.info((shopkeeper!=null)?views.dotedBox("Login Successfully :)") :
+			views.dotedBox("Login Unsuccessfully :("));
+		
+		String shopkeeperString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shopkeeper);
+		
+		return (shopkeeper!=null)? ResponseEntity.ok(shopkeeperString) :
+			ResponseEntity.status(HttpStatus.BAD_REQUEST).body(shopkeeperString);
 		
 	}
 	
@@ -204,8 +163,8 @@ public class VendorServiceImpl implements VendorService {
 		Integer warehouse = Integer.parseInt(stringWarehouse);
 		
 		int result = vendorRepository.addNewProduct(name, brand, category, cost, warehouse);
-		System.out.println((result==1)?dotedBox("Product added successfully :)") :
-				dotedBox("A Product with the same name and category already exist :("));
+		System.out.println((result==1)?views.dotedBox("Product added successfully :)") :
+				views.dotedBox("A Product with the same name and category already exist :("));
 		
 	}
 
@@ -215,7 +174,7 @@ public class VendorServiceImpl implements VendorService {
 		List<Product> products = currentPage.getContent();
 		if(products.isEmpty())
 			return false;
-		products.forEach(product -> System.out.println(solidBox(viewOfProducts(product), 30) + "\n"));
+		products.forEach(product -> System.out.println(views.solidBox(views.viewOfProductsForVendor(product), 30) + "\n"));
 		
 		return true;
 	}
@@ -237,7 +196,7 @@ public class VendorServiceImpl implements VendorService {
 		Shopkeeper shopkeeper = vendorRepository.getShopkeeper();
 		@SuppressWarnings("resource")
 		Scanner scanner = new Scanner(System.in);
-		System.out.println("\n" +solidBox(viewOfShopkeeper(shopkeeper), 45));
+		System.out.println("\n" +views.solidBox(views.viewOfShopkeeperForVendor(shopkeeper), 45));
 		
 		String contact = "";
 		System.out.print("\nDo you want to change your Contact Number (Y)or(N): ");
@@ -317,248 +276,16 @@ public class VendorServiceImpl implements VendorService {
 		}
 		
 		result = vendorRepository.cahngePersonalInformadtion(contact, email, password);
-		System.out.println("\n" + ((result==1)? dotedBox("Information updated successfully :)") :
-			dotedBox("Information was't updated :(")));
+		System.out.println("\n" + ((result==1)? views.dotedBox("Information updated successfully :)") :
+			views.dotedBox("Information was't updated :(")));
 		
 		if(!(contact.isEmpty() && email.isEmpty()))
-			System.out.println("\n" + viewOfShopkeeper(shopkeeper) + "\n");
+			System.out.println("\n" + views.viewOfShopkeeperForVendor(shopkeeper) + "\n");
 	}
 
 	@Override
 	public void setUnacceptedOrders() {
 		//ToDo:
-	}
-	
-	public String dotedBox(String string, Integer width) {
-		if(width<7)
-			width=7;
-		int maxStringLen = width-4;
-		
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		stringBuilder.append("\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("* ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" *\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" *\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		
-		return stringBuilder.toString();
-	}
-
-	public String dotedBox(String string) {
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		int maxStringLen = lines.get(0).length();
-		for(int i=1; i<lines.size(); i++) {
-			if(maxStringLen<lines.get(i).length())
-				maxStringLen = lines.get(i).length();
-		}
-		int width = maxStringLen + 4;
-		
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		stringBuilder.append("\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("* ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" *\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" *\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		
-		return stringBuilder.toString();
-	}
-	
-	public String solidBox(String string, Integer width) {
-		if(width<7)
-			width=7;
-		int maxStringLen = width-4;
-		
-		StringBuilder stringBuilder = new StringBuilder("+");
-		List<String> lines = string.lines().toList();
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("| ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" |\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" |\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		stringBuilder.append("+");
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+");
-		
-		return stringBuilder.toString();
-	}
-	
-	public String solidBox(String string) {
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		int maxStringLen = lines.get(0).length();
-		for(int i=1; i<lines.size(); i++) {
-			if(maxStringLen<lines.get(i).length())
-				maxStringLen = lines.get(i).length();
-		}
-		int width = maxStringLen + 4;
-		
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("| ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" |\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" |\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		stringBuilder.append("+");
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+");
-		
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfUnaccepetedOrders(Object object) {
-		StringBuilder stringBuilder = new StringBuilder();
-		//TODO:view of un-accepted orders.
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfShopkeeper(Shopkeeper shopkeeper) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Name", shopkeeper.getName(), "Can't change"));
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Contact", shopkeeper.getContact(), "Changable"));
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Email", shopkeeper.getName(), "Changable"));
-		stringBuilder.append("%-15s: %-25s (%s)\n".formatted("Username", shopkeeper.getUserName(), "Can't change"));
-		stringBuilder.append("%-15s: %-25s (%s)".formatted("Password", "********", "Changable"));
-		
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfProducts(Product product) {
-		StringBuilder stringBuilder = new StringBuilder();
-		if(!product.getBrand().isEmpty())
-			stringBuilder.append("%s\n".formatted(product.getBrand()));
-		
-		stringBuilder.append("%s\n".formatted(product.getName()));
-		
-		Double rating = product.getRating();
-		stringBuilder.append("●".repeat(rating.intValue()));
-		Integer partialRating = Double.valueOf((rating*100)%100).intValue();
-		if(partialRating>0 && partialRating<=25)
-			stringBuilder.append("◔");
-		else if(partialRating>25 && partialRating<=50)
-			stringBuilder.append("◑");
-		else if(partialRating>50 && partialRating<=75)
-			stringBuilder.append("◕");
-		stringBuilder.append("◌".repeat(5-rating.intValue()));
-		
-		stringBuilder.append(" " + product.getPurchased() + "\n");
-		
-		stringBuilder.append("₹" + product.getCost());
-		
-		return stringBuilder.toString();
 	}
 	
 	public Double totalRevinue() {
@@ -568,4 +295,5 @@ public class VendorServiceImpl implements VendorService {
 				.reduce(0.0, (sum, x) -> sum + x);
 		return revinue;
 	}
+
 }

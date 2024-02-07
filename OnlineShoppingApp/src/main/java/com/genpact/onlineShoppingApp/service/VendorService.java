@@ -1,12 +1,18 @@
 package com.genpact.onlineShoppingApp.service;
 
+import java.io.IOException;
+
+import org.springframework.http.ResponseEntity;
+
+import com.genpact.onlineShoppingApp.entity.Shopkeeper;
+
 public interface VendorService {
 	
 	/*Create new account by taking required details*/
-	void createAccount();
+	ResponseEntity<String> createAccount(Shopkeeper shopkeeper) throws IOException;
 	
 	/*Login by taking userName and password*/
-	void shopkeeperLogin();
+	ResponseEntity<String> shopkeeperLogin(String logInDetails) throws IOException;
 	
 	/*Add a new product.*/
 	void addNewProduct();

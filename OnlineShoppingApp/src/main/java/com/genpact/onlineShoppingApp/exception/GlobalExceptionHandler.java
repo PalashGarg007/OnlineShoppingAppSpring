@@ -18,6 +18,14 @@ public class GlobalExceptionHandler {
 				.body("[\"Error\": \""+ e.getMessage()+ "\"]");
 	}
 	
+	@ExceptionHandler(InvalidInputException.class)
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
+	public ResponseEntity<String> handleInvalidInputException(InvalidInputException e) {
+		return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+				.body("[\"Error\": \""+ e.getMessage()+ "\"]");
+	}
+	
 }
 
 // exception mapper

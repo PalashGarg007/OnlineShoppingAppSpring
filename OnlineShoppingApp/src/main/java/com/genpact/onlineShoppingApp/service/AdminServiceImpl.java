@@ -44,6 +44,8 @@ public class AdminServiceImpl implements AdminService {
 	
 	private Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
 	
+	private Views views;
+	
 	@Override
 	@GetMapping("/customer/all/page={pageNumber}")
 	public ResponseEntity<String> getCustomers(@PathVariable Integer pageNumber) throws IOException {
@@ -53,7 +55,7 @@ public class AdminServiceImpl implements AdminService {
 		if(customers.isEmpty())
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Customers available");
 		
-		customers.forEach(customer -> logger.info(solidBox(viewOfCustomer(customer)) + "\n"));
+		customers.forEach(customer -> logger.info(views.solidBox(views.viewOfCustomerForAdmin(customer)) + "\n"));
 		
 		String customersStr = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(customers);
 		
@@ -70,7 +72,7 @@ public class AdminServiceImpl implements AdminService {
 		if(shopkeepers.isEmpty())
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Shopkeepers available");
 		
-		shopkeepers.forEach(shopkeeper -> logger.info(solidBox(viewOfShopkeeper(shopkeeper)) + "\n"));
+		shopkeepers.forEach(shopkeeper -> logger.info(views.solidBox(views.viewOfShopkeeperForAdmin(shopkeeper)) + "\n"));
 		
 		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shopkeepers));
 		
@@ -85,7 +87,7 @@ public class AdminServiceImpl implements AdminService {
 		if(payments.isEmpty())
 			return ResponseEntity.status(HttpStatus.NO_CONTENT).body("No more Payments available.");
 		
-		payments.forEach(payment -> logger.info(solidBox(viewOfPayment(payment))));
+		payments.forEach(payment -> logger.info(views.solidBox(views.viewOfPaymentForAdmin(payment))));
 		
 		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payments));
 	}
@@ -102,8 +104,8 @@ public class AdminServiceImpl implements AdminService {
 		else
 			throw new InvalidInputException("Invalid discount");
 		
-		logger.info((savedpayment != null)?dotedBox("New method added successfully :)") :
-			dotedBox("This method alrady exist :("));
+		logger.info((savedpayment != null) ? views.dotedBox("New method added successfully :)") :
+			views.dotedBox("This method alrady exist :("));
 		
 		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(savedpayment));
 		
@@ -121,8 +123,8 @@ public class AdminServiceImpl implements AdminService {
 		else
 			throw new InvalidInputException("Invalid discount");
 		
-		logger.info((savedpayment != null)?dotedBox("Discount updated successfully :)") :
-			dotedBox("This Id does't exist :("));
+		logger.info((savedpayment != null) ? views.dotedBox("Discount updated successfully :)") :
+			views.dotedBox("This Id does't exist :("));
 		
 		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(savedpayment));
 	}
@@ -132,233 +134,10 @@ public class AdminServiceImpl implements AdminService {
 	public ResponseEntity<String> removePaymentById(@PathVariable Integer id) throws IOException{
 		Payment payment = adminRepository.removePaymentById(id);
 		
-		logger.info((payment != null)?dotedBox("Payment removed successfully :)") :
-			dotedBox("This Id does't exist :("));
+		logger.info((payment != null) ? views.dotedBox("Payment removed successfully :)") :
+			views.dotedBox("This Id does't exist :("));
 		
 		return ResponseEntity.ok(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(payment));
-	}
-	
-	public String viewOfShopkeeper(Shopkeeper shopkeeper) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("%-15s: %-25s\n".formatted("Name", shopkeeper.getName()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Contact", shopkeeper.getContact()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Email", shopkeeper.getName()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Username", shopkeeper.getUserName()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Password", "********"));
-		
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfCustomer(Customer customer) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("%-15s: %-25s\n".formatted("Name", customer.getName()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Contact", customer.getContact()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("DOB", customer.getDob()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Email", customer.getEmail()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Address", customer.getAddress()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Username", customer.getUserName()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Password", "********"));
-		
-		return stringBuilder.toString();
-	}
-	
-	public String viewOfPayment(Payment payment) {
-		StringBuilder stringBuilder = new StringBuilder();
-		stringBuilder.append("%-15s: %-25s\n".formatted("ID", payment.getId()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Mode of Payment", payment.getMethod()));
-		stringBuilder.append("%-15s: %-25s\n".formatted("Discount", payment.getDiscount()));
-		
-		return stringBuilder.toString();
-	}
-	
-	public String dotedBox(String string, Integer width) {
-		if(width<7)
-			width=7;
-		int maxStringLen = width-4;
-		
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		stringBuilder.append("\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("* ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" *\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" *\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		
-		return stringBuilder.toString();
-	}
-
-	public String dotedBox(String string) {
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		int maxStringLen = lines.get(0).length();
-		for(int i=1; i<lines.size(); i++) {
-			if(maxStringLen<lines.get(i).length())
-				maxStringLen = lines.get(i).length();
-		}
-		int width = maxStringLen + 4;
-		
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		stringBuilder.append("\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("* ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" *\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" *\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		for (int i = 0; i < width; i++) {
-            stringBuilder.append("*");
-        }
-		
-		return stringBuilder.toString();
-	}
-	
-	public String solidBox(String string, int width) {
-		if(width<7)
-			width=7;
-		int maxStringLen = width-4;
-		
-		StringBuilder stringBuilder = new StringBuilder("+");
-		List<String> lines = string.lines().toList();
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("| ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" |\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" |\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		stringBuilder.append("+");
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+");
-		
-		return stringBuilder.toString();
-	}
-	
-	public String solidBox(String string) {
-		StringBuilder stringBuilder = new StringBuilder();
-		List<String> lines = string.lines().toList();
-		int maxStringLen = lines.get(0).length();
-		for(int i=1; i<lines.size(); i++) {
-			if(maxStringLen<lines.get(i).length())
-				maxStringLen = lines.get(i).length();
-		}
-		int width = maxStringLen + 4;
-		
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+\n");
-		
-		for(String line: lines) {
-	        int remainingChars = line.length();
-	        int currentIndex = 0;
-
-	        while (remainingChars > 0) {
-	            stringBuilder.append("| ");
-	            int charsToPrint = Math.min(maxStringLen, remainingChars);
-	            
-	            if(charsToPrint!=maxStringLen) {
-	            	int padding = (maxStringLen - charsToPrint)/2;
-	            	stringBuilder.append(" ".repeat(padding));
-	            	stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            	stringBuilder.append(" ".repeat((((maxStringLen - charsToPrint)%2)==0)? padding: padding+1));
-	            	stringBuilder.append(" |\n");
-	            	break;
-	            }
-	            
-	            stringBuilder.append(line.substring(currentIndex, currentIndex + charsToPrint));
-	            stringBuilder.append(" ".repeat(maxStringLen - charsToPrint));
-
-	            stringBuilder.append(" |\n");
-
-	            currentIndex += charsToPrint;
-	            remainingChars -= charsToPrint;
-	        }
-		}
-		stringBuilder.append("+");
-		for (int i = 0; i < width-2; i++) {
-            stringBuilder.append("-");
-        }
-		stringBuilder.append("+");
-		
-		return stringBuilder.toString();
 	}
 	
 }
