@@ -37,19 +37,18 @@ public class OnlineShoppingAppApplication{
 	public static void main(String[] args) {
 		SpringApplication.run(OnlineShoppingAppApplication.class, args);
 		
-//		streamExample();
+		streamExample();
 		
-		Thread thread1 = new Thread(
-				() -> {
-					while(true) {
-						System.out.println(vendorService.totalRevinue());
-						try{Thread.sleep(10000);} catch(Exception e) {}
-					}
-				});
-		
-		thread1.start();
-		
+//		Thread thread1 = new Thread(
+//				() -> {
+//					while(true) {
+//						System.out.println(vendorService.totalRevinue());
+//						try{Thread.sleep(10000);} catch(Exception e) {}
+//					}
+//				});
 //		
+//		thread1.start();
+		
 	}
 
 //	@Override
