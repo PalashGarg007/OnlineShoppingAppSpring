@@ -86,8 +86,8 @@ public class OnlineShoppingAppApplication{
 		List<Integer> li = Arrays.asList(13,12,13,24,24,33,15,26,15);
 		
 		List<Integer> distinctIntegers = li.stream()
+				.sorted((o1, o2) -> (o1>o2)? 1:(o2>o1)? -1:0)
 				.distinct()
-				.sorted((o1, o2) -> (o1>o2)? 1:(o2>o1)? -1:0) 
 				.collect(Collectors.toList());
 		
 		List<String> colour = Arrays.asList("Red", "Green", "Blue", "Pink", "Brown");
