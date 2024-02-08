@@ -21,13 +21,13 @@ import com.genpact.onlineShoppingApp.service.VendorServiceImpl;
 @SuppressWarnings("unused")
 @RestController
 @SpringBootApplication
-//public class OnlineShoppingAppApplication implements CommandLineRunner{
 public class OnlineShoppingAppApplication{
+//public class OnlineShoppingAppApplication implements CommandLineRunner{
 	@Autowired
 	private AdminService adminService;
 	
 	@Autowired
-	private VendorService vendorService;
+	private static VendorService vendorService;
 	
 	@GetMapping("/")
 	 String home() {
@@ -39,17 +39,17 @@ public class OnlineShoppingAppApplication{
 		
 //		streamExample();
 		
-//		Thread thread1 = new Thread(
-//				() -> {
-//					VendorServiceImpl vendorServiceImpl = new VendorServiceImpl();
-//					while(true) {
-//						System.out.println(vendorServiceImpl.totalRevinue());
-//						try{Thread.sleep(10000);} catch(Exception e) {}
-//					}
-//				});
-//		
-//		thread1.start();
+		Thread thread1 = new Thread(
+				() -> {
+					while(true) {
+						System.out.println(vendorService.totalRevinue());
+						try{Thread.sleep(10000);} catch(Exception e) {}
+					}
+				});
 		
+		thread1.start();
+		
+//		
 	}
 
 //	@Override
@@ -68,21 +68,43 @@ public class OnlineShoppingAppApplication{
 	}
 	
 	private static void streamExample() {
-		List<Integer> li = Arrays.asList(1,3,5,6,2,4,8,7,7,7);
+//		List<Integer> li = Arrays.asList(1,3,5,6,2,4,8,7,7,7);
+//		
+//		List<Integer> newStreamList = li.stream()
+//				.map(x -> x*x)
+//				.filter(x -> x<30)
+//				.sorted((o1, o2) -> (o1>o2)?-1:((o2>o1)?+1:0))
+//				.collect(Collectors.toList());
+//		
+//		Integer newStreamValue = li.stream()
+//				.filter(x -> x%2==0)
+//				.reduce(0, (value, x) -> value+x);
+//		
+//		System.out.println("Sum of all even number of:" + li + " is: " + newStreamValue);
+//		System.out.println(newStreamList);
+//		newStreamList.forEach(x -> System.out.println(x));
 		
-		List<Integer> newStreamList = li.stream()
-				.map(x -> x*x)
-				.filter(x -> x<30)
-				.sorted((o1, o2) -> (o1>o2)?-1:((o2>o1)?+1:0))
+		List<Integer> li = Arrays.asList(13,12,13,24,24,33,15,26,15);
+		
+		List<Integer> distinctIntegers = li.stream()
+				.distinct()
+				.sorted((o1, o2) -> (o1>o2)? 1:(o2>o1)? -1:0) 
 				.collect(Collectors.toList());
 		
-		Integer newStreamValue = li.stream()
-				.filter(x -> x%2==0)
-				.reduce(0, (value, x) -> value+x);
+		List<String> colour = Arrays.asList("Red", "Green", "Blue", "Pink", "Brown");
 		
-		System.out.println("Sum of all even number of:" + li + " is: " + newStreamValue);
-		System.out.println(newStreamList);
-		newStreamList.forEach(x -> System.out.println(x));
+		List<String> assendingColour = colour.stream()
+				.sorted((o1, o2) -> o1.compareTo(o2))
+				.collect(Collectors.toList());
+		
+		List<String> descendingColour = colour.stream()
+				.sorted((o1, o2) -> o2.compareTo(o1))
+				.collect(Collectors.toList());
+		
+		System.out.println("Distinct integers: " + distinctIntegers);
+		System.out.println("Assending Order: " + assendingColour);
+		System.out.println("Descending Order: " + descendingColour);
+		
 	}
 	
 	// Actual method available in VendorServiceImpl
