@@ -23,7 +23,7 @@ public interface VendorRepository {
 	Integer cahngePersonalInformadtion(String contact, String email, String password); 
 	
 	/*add new product to the Shop.*/
-	Integer addNewProduct(String name, String brand, String category, Double cost, Integer warehouse);
+	Product addNewProduct(Product product);
 	
 	/*should be able to re-stock*/
 	//TODO: create method re-stock.

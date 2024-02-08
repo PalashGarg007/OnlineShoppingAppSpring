@@ -55,26 +55,27 @@ public class VendorReposotoryImpl implements VendorRepository{
 
 	@Override
 	@Transactional
-	public Integer addNewProduct(String name, String brand,
-			String category, Double cost, Integer warehouse) {
-		int result = 0;
-		if(!productRepository.findByAllIgnoringCaseSidAndNameAndCategory(currentShopkeeper.getId(), name, category).isEmpty())
-			return result;
-		else
-			result = 1;
-		
+	public Product addNewProduct(Product newProduct) {
 		Integer sid = currentShopkeeper.getId();
-		Double rating = 0d;
-		Integer purchased = 0;
-		List<Product> similarProductList = productRepository.findByAllIgnoreCaseCategoryAndName(category, name);
-		if(!similarProductList.isEmpty()) {
-			rating = similarProductList.get(0).getRating();
-			purchased = similarProductList.get(0).getPurchased();
-		}
-		Product product = new Product(sid, name, brand, category, cost, warehouse, rating, purchased);
-		productRepository.save(product);
 		
-		return result;
+		if(!productRepository
+				.findByAllIgnoringCaseSidAndNameAndCategory(
+						sid, newProduct.getName(), newProduct.getCategory())
+				.isEmpty())
+			return null;
+		
+		Double rating = 0d;
+		List<Product> similarProductList = productRepository.findByAllIgnoreCaseCategoryAndName(
+				newProduct.getCategory(), newProduct.getName());
+		
+		if(!similarProductList.isEmpty())
+			rating = similarProductList.get(0).getRating();
+		
+		newProduct.setSid(sid);
+		newProduct.setRating(rating);
+		newProduct.setPurchased(0);
+		
+		return productRepository.save(newProduct); 
 	}
 
 	

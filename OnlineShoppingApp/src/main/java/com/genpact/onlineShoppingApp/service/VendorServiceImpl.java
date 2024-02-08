@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -128,43 +129,30 @@ public class VendorServiceImpl implements VendorService, Runnable {
 	}
 	
 	@Override
-	public void addNewProduct() {
-		Function<String, Boolean> costCondition = (stringCost) -> (
-				stringCost.matches("^([0-9]{1,})((\\.\\d+)?)$"));
+	@PostMapping("/product/addNew")
+	public ResponseEntity<String> addNewProduct(@RequestBody String productString) throws IOException {
+		Product product;
 		
-		Function<String, Boolean> warehouseCondition = (stringWarehouse) -> (
-				stringWarehouse.matches("^([0-9]{1,})$"));
-		@SuppressWarnings("resource")
-		Scanner scanner = new Scanner(System.in);
-		
-		System.out.print("\nEnter Product name: ");
-		String name = scanner.nextLine().strip();
-		
-		System.out.print("\nEnter Product brand: ");
-		String brand = scanner.nextLine().strip();
-		
-		System.out.print("\nEnter Product category: ");
-		String category = scanner.nextLine().strip();
-		
-		System.out.print("\nEnter Product Cost: ");
-		String stringCost = scanner.nextLine().strip();
-		while(!costCondition.apply(stringCost)) {
-			System.out.print("\tEnter a valid cost: ");
-			stringCost = scanner.nextLine().strip();
+		try {
+			product = mapper.readValue(productString, Product.class);
+		} catch (JsonProcessingException e) {
+			throw new InvalidInputException(e.getMessage());
 		}
-		Double cost = Double.parseDouble(stringCost);
 		
-		System.out.print("\nEnter Quantity of product availabel in the warehouse: ");
-		String stringWarehouse = scanner.nextLine().strip();
-		while(!warehouseCondition.apply(stringWarehouse)) {
-			System.out.print("\tEnter a amount: ");
-			stringWarehouse = scanner.nextLine().strip();
-		}
-		Integer warehouse = Integer.parseInt(stringWarehouse);
+		if(product.getCost()<=0)
+			throw new InvalidInputException("Invalid cost.");
 		
-		int result = vendorRepository.addNewProduct(name, brand, category, cost, warehouse);
-		System.out.println((result==1)?views.dotedBox("Product added successfully :)") :
+		if(product.getWarehouse()<0)
+			throw new InvalidInputException("No of products in the warehouse can't be negative.");
+		
+		Product result = vendorRepository.addNewProduct(product);
+		String resultString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+		
+		logger.info((result!=null) ? views.dotedBox("Product added successfully :)") :
 				views.dotedBox("A Product with the same name and category already exist :("));
+		
+		return (result!=null) ? ResponseEntity.ok(resultString) :
+			ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(resultString);
 		
 	}
 
@@ -288,6 +276,7 @@ public class VendorServiceImpl implements VendorService, Runnable {
 		//ToDo:
 	}
 	
+	@Override
 	public Double totalRevinue() {
 		List<Product> productList = vendorRepository.inventoryList();
 		Double revinue = productList.stream()

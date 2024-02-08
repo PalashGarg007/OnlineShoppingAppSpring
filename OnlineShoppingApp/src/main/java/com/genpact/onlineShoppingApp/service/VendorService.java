@@ -15,7 +15,7 @@ public interface VendorService {
 	ResponseEntity<String> shopkeeperLogin(String logInDetails) throws IOException;
 	
 	/*Add a new product.*/
-	void addNewProduct();
+	ResponseEntity<String> addNewProduct(String productString) throws IOException;
 	
 	/*Display all products the shopkeeper has default(5) at a time.*/
 	Boolean getProducts(Integer pageNumber);
@@ -24,5 +24,7 @@ public interface VendorService {
 	void changePersonalInformadtion();
 	
 	void setUnacceptedOrders();
+	
+	Double totalRevinue();
 	
 }

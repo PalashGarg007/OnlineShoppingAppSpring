@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.service.AdminService;
 import com.genpact.onlineShoppingApp.service.VendorService;
+import com.genpact.onlineShoppingApp.service.VendorServiceImpl;
 
 @SuppressWarnings("unused")
 @RestController
@@ -37,6 +38,18 @@ public class OnlineShoppingAppApplication{
 		SpringApplication.run(OnlineShoppingAppApplication.class, args);
 		
 //		streamExample();
+		
+//		Thread thread1 = new Thread(
+//				() -> {
+//					VendorServiceImpl vendorServiceImpl = new VendorServiceImpl();
+//					while(true) {
+//						System.out.println(vendorServiceImpl.totalRevinue());
+//						try{Thread.sleep(10000);} catch(Exception e) {}
+//					}
+//				});
+//		
+//		thread1.start();
+		
 	}
 
 //	@Override
