@@ -85,24 +85,20 @@ public class OnlineShoppingAppApplication{
 		
 		List<Integer> li = Arrays.asList(13,12,13,24,24,33,15,26,15);
 		
-		List<Integer> distinctIntegers = li.stream()
+		li.stream()
 				.sorted((o1, o2) -> (o1>o2)? 1:(o2>o1)? -1:0)
 				.distinct()
-				.collect(Collectors.toList());
+				.forEach(x -> System.out.println(x));
 		
 		List<String> colour = Arrays.asList("Red", "Green", "Blue", "Pink", "Brown");
 		
-		List<String> assendingColour = colour.stream()
+		colour.stream()
 				.sorted((o1, o2) -> o1.compareTo(o2))
-				.collect(Collectors.toList());
+				.forEach(x -> System.out.println(x));
 		
-		List<String> descendingColour = colour.stream()
+		colour.stream()
 				.sorted((o1, o2) -> o2.compareTo(o1))
-				.collect(Collectors.toList());
-		
-		System.out.println("Distinct integers: " + distinctIntegers);
-		System.out.println("Assending Order: " + assendingColour);
-		System.out.println("Descending Order: " + descendingColour);
+				.forEach(x -> System.out.println(x));
 		
 	}
 	
