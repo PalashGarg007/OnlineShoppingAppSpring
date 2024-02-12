@@ -10,8 +10,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.genpact.onlineShoppingApp.service.AdminService;
-import com.genpact.onlineShoppingApp.service.VendorService;
+import com.genpact.onlineShoppingApp.controller.AdminController;
+import com.genpact.onlineShoppingApp.controller.VendorController;
 
 @SuppressWarnings("unused")
 @RestController
@@ -19,10 +19,10 @@ import com.genpact.onlineShoppingApp.service.VendorService;
 //public class OnlineShoppingAppApplication{
 public class OnlineShoppingAppApplication implements CommandLineRunner{
 	@Autowired
-	private AdminService adminService;
+	private AdminController adminController;
 	
 	@Autowired
-	private VendorService vendorService;
+	private VendorController vendorController;
 	
 	@GetMapping("/")
 	 String home() {
@@ -90,17 +90,17 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 }
 
 class BackgroundServices implements Runnable {
-	VendorService vendorService;
+	VendorController vendorController;
 	
-	public BackgroundServices(VendorService vendorService) {
-		this.vendorService = vendorService;
+	public BackgroundServices(VendorController vendorController) {
+		this.vendorController = vendorController;
 		Thread thread1 = new Thread(this, "BackgroundServices");
 		thread1.start();
 	}
 	
 	public void run() {
 		while(true) {
-			System.out.println(vendorService.totalRevinue());
+			System.out.println(vendorController.totalRevinue());
 			try {Thread.sleep(1000);} catch(Exception e) {}
 		}
 	}

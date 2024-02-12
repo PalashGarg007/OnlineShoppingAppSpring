@@ -1,4 +1,4 @@
-package com.genpact.onlineShoppingApp.service;
+package com.genpact.onlineShoppingApp.controller;
 
 import java.util.List;
 
