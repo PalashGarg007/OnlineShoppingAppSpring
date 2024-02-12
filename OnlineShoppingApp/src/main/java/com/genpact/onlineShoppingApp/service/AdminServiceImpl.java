@@ -44,7 +44,7 @@ public class AdminServiceImpl implements AdminService {
 	
 	private Logger logger = LoggerFactory.getLogger(AdminServiceImpl.class);
 	
-	private Views views;
+	private Views views = new Views();
 	
 	@Override
 	@GetMapping("/customer/all/page={pageNumber}")
@@ -64,7 +64,7 @@ public class AdminServiceImpl implements AdminService {
 	}
 
 	@Override
-	@GetMapping("/shopkeeper/all/page={pageNumger}")
+	@GetMapping("/shopkeeper/all/page={pageNumber}")
 	public ResponseEntity<String> getShopkeepers(@PathVariable Integer pageNumber) throws IOException {
 		Page<Shopkeeper> currentPage = adminRepository.getShopkeepers(pageNumber, 5);
 		List<Shopkeeper> shopkeepers = currentPage.getContent();

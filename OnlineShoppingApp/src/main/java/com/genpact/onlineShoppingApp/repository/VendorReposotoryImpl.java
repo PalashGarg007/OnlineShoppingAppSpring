@@ -49,8 +49,10 @@ public class VendorReposotoryImpl implements VendorRepository{
 		List<Shopkeeper> shopkeeperList = shopkeeperRepository.findByUserNameAndPassword(userName, password);
 		if(shopkeeperList.isEmpty())
 			throw new InvalidInputException("Invalid UserName or Password");
-		else
-			return shopkeeperList.get(0);
+		
+		currentShopkeeper = shopkeeperList.get(0);
+		
+		return currentShopkeeper;
 	}
 
 	@Override

@@ -1,11 +1,8 @@
 package com.genpact.onlineShoppingApp;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -13,21 +10,19 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.service.AdminService;
 import com.genpact.onlineShoppingApp.service.VendorService;
-import com.genpact.onlineShoppingApp.service.VendorServiceImpl;
 
 @SuppressWarnings("unused")
 @RestController
 @SpringBootApplication
-public class OnlineShoppingAppApplication{
-//public class OnlineShoppingAppApplication implements CommandLineRunner{
+//public class OnlineShoppingAppApplication{
+public class OnlineShoppingAppApplication implements CommandLineRunner{
 	@Autowired
 	private AdminService adminService;
 	
 	@Autowired
-	private static VendorService vendorService;
+	private VendorService vendorService;
 	
 	@GetMapping("/")
 	 String home() {
@@ -37,21 +32,8 @@ public class OnlineShoppingAppApplication{
 	public static void main(String[] args) {
 		SpringApplication.run(OnlineShoppingAppApplication.class, args);
 		
-		streamExample();
-		
-//		Thread thread1 = new Thread(
-//				() -> {
-//					while(true) {
-//						System.out.println(vendorService.totalRevinue());
-//						try{Thread.sleep(10000);} catch(Exception e) {}
-//					}
-//				});
-//		
-//		thread1.start();
-		
 	}
 
-//	@Override
 	public void run(String... args) throws Exception {
 //		adminService.getCustomers(0);
 //		adminService.getShopkeepers(0);
@@ -64,6 +46,9 @@ public class OnlineShoppingAppApplication{
 //		vendorService.addNewProduct();
 //		vendorService.getProducts(0);
 //		vendorService.changePersonalInformadtion();
+		
+//		streamExample();
+//		new BackgroundServices(vendorService);
 	}
 	
 	private static void streamExample() {
@@ -101,14 +86,22 @@ public class OnlineShoppingAppApplication{
 				.forEach(x -> System.out.println(x));
 		
 	}
-	
-	// Actual method available in VendorServiceImpl
-//	public Double totalRevinue() {
-//		List<Product> productList = vendorRepository.inventoryList();
-//		Double revinue = productList.stream()
-//				.map((product)-> product.getCost()*product.getPurchased())
-//				.reduce(0.0, (sum, x) -> sum + x);
-//		return revinue;
-//	}
 
+}
+
+class BackgroundServices implements Runnable {
+	VendorService vendorService;
+	
+	public BackgroundServices(VendorService vendorService) {
+		this.vendorService = vendorService;
+		Thread thread1 = new Thread(this, "BackgroundServices");
+		thread1.start();
+	}
+	
+	public void run() {
+		while(true) {
+			System.out.println(vendorService.totalRevinue());
+			try {Thread.sleep(1000);} catch(Exception e) {}
+		}
+	}
 }

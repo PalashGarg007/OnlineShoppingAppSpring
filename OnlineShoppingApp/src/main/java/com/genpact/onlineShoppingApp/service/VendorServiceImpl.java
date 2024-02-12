@@ -30,7 +30,7 @@ import com.genpact.onlineShoppingApp.repository.VendorRepository;
 @RestController
 @RequestMapping("/shopkeeper")
 @Component
-public class VendorServiceImpl implements VendorService, Runnable {
+public class VendorServiceImpl implements VendorService {
 	@Autowired
 	private VendorRepository vendorRepository;
 	
@@ -41,12 +41,10 @@ public class VendorServiceImpl implements VendorService, Runnable {
 	
 	private Logger logger = LoggerFactory.getLogger(VendorServiceImpl.class);
 	
-	private Views views;
+	private Views views = new Views();
 	
-	@Override
-	public void run() {
-		//TODO:Write the run method for vendorRepositoryInpl
-	}
+	//for multi-threading
+	private Boolean login = false;
 	
 	@Override
 	@PostMapping("/newAccount")
@@ -106,6 +104,10 @@ public class VendorServiceImpl implements VendorService, Runnable {
 		if(result == null)
 			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(resultString);
 		
+		//for multi-threading
+		login = true;
+		notify();
+		
 		return ResponseEntity.ok(resultString);
 		
 	}
@@ -114,7 +116,6 @@ public class VendorServiceImpl implements VendorService, Runnable {
 	@GetMapping("/logIn")
 	public ResponseEntity<String> shopkeeperLogin(@RequestBody String loginDetails) throws IOException {
 		Shopkeeper credintials = mapper.readValue(loginDetails, Shopkeeper.class);
-		//ToDo: Testing the above line.
 		
 		Shopkeeper shopkeeper = vendorRepository.shopkeeperLogin(credintials.getUserName(), credintials.getPassword());
 		
@@ -122,6 +123,9 @@ public class VendorServiceImpl implements VendorService, Runnable {
 			views.dotedBox("Login Unsuccessfully :("));
 		
 		String shopkeeperString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shopkeeper);
+		
+		//for multi-threading
+		if(shopkeeper!=null) {login = true; notify();}
 		
 		return (shopkeeper!=null)? ResponseEntity.ok(shopkeeperString) :
 			ResponseEntity.status(HttpStatus.BAD_REQUEST).body(shopkeeperString);
@@ -277,7 +281,12 @@ public class VendorServiceImpl implements VendorService, Runnable {
 	}
 	
 	@Override
+	@GetMapping("/totalRevinue")
 	public Double totalRevinue() {
+		//for multi-threading
+		while(!login) {
+			try {wait();}catch (Exception e) {}
+		}
 		List<Product> productList = vendorRepository.inventoryList();
 		Double revinue = productList.stream()
 				.map((product)-> product.getCost()*product.getPurchased())
