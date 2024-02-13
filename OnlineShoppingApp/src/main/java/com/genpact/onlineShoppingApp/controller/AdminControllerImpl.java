@@ -21,8 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.genpact.onlineShoppingApp.entity.Customer;
 import com.genpact.onlineShoppingApp.entity.Payment;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
@@ -37,14 +35,13 @@ public class AdminControllerImpl implements AdminController {
 	@Autowired
 	private AdminService adminService;
 	
-	private ObjectMapper mapper = JsonMapper.builder()
-			.findAndAddModules()
-			.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-			.build();
+	@Autowired
+	private ObjectMapper mapper;
 	
 	private Logger logger = LoggerFactory.getLogger(AdminControllerImpl.class);
 	
-	private Views views = new Views();
+	@Autowired
+	private Views views;
 	
 	@Override
 	@GetMapping("/customers/page={pageNumber}")
@@ -62,7 +59,7 @@ public class AdminControllerImpl implements AdminController {
 		return ResponseEntity.ok(customersStr);
 		
 	}
-
+	
 	@Override
 	@GetMapping("/shopkeepers/page={pageNumber}")
 	public ResponseEntity<String> getShopkeepers(@PathVariable Integer pageNumber) throws IOException {

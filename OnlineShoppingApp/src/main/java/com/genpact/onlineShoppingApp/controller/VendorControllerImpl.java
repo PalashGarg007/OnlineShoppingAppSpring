@@ -20,8 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
 import com.genpact.onlineShoppingApp.exception.InvalidInputException;
@@ -34,14 +32,13 @@ public class VendorControllerImpl implements VendorController {
 	@Autowired
 	private VendorService vendorService;
 	
-	private ObjectMapper mapper = JsonMapper.builder()
-			.findAndAddModules()
-			.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-			.build();
+	@Autowired
+	private ObjectMapper mapper;
 	
 	private Logger logger = LoggerFactory.getLogger(VendorControllerImpl.class);
 	
-	private Views views = new Views();
+	@Autowired
+	private Views views;
 	
 	//for multi-threading
 	private Boolean login = false;
