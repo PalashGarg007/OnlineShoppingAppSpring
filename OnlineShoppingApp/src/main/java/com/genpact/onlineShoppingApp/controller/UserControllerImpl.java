@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,6 +30,15 @@ public class UserControllerImpl implements UserController {
 	//preparing the request : headers and body.
 	//RequestPreparation.
 	
+	@Override
+	@PutMapping("/orders1")
+	public void placeOrder1(@RequestBody Integer[] orders) {
+		List<Integer> productId = List.of(orders);
+		Map<Integer, String> productMap = Collections.synchronizedMap(userService.getProducts());
+		
+		productId.forEach(id -> executorService.submit(() ->
+			System.out.println(id +" : "+ productMap.get(id))));
+	}
 	
 	@Override
 	@PutMapping("/orders2")
@@ -40,14 +50,14 @@ public class UserControllerImpl implements UserController {
 		.forEach(id -> System.out.println(id + " : " + productMap.get(id)));
 	}
 	
-	
 	@Override
-	@PutMapping("/orders1")
-	public void placeOrder1(@RequestBody Integer[] orders) {
+	@Async
+	@PutMapping("/orders3")
+	public void placeOrder3(@RequestBody Integer[] orders) {
 		List<Integer> productId = List.of(orders);
 		Map<Integer, String> productMap = Collections.synchronizedMap(userService.getProducts());
 		
-		productId.forEach(id -> executorService.submit(() ->
-			System.out.println(id +" : "+ productMap.get(id))));
+		productId.stream()
+		.forEach(id -> System.out.println(id + " : " + productMap.get(id)));
 	}
 }

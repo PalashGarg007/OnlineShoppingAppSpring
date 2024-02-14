@@ -6,4 +6,6 @@ public interface UserController {
 
 	void placeOrder1(Integer[] orders);
 
+	void placeOrder3(Integer[] orders);
+
 }
