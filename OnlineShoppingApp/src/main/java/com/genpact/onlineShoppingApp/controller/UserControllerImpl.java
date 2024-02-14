@@ -26,6 +26,10 @@ public class UserControllerImpl implements UserController {
 	
 	private final ExecutorService executorService = Executors.newFixedThreadPool(5);
 	
+	//preparing the request : headers and body.
+	//RequestPreparation.
+	
+	
 	@Override
 	@PutMapping("/orders2")
 	public void placeOrder2(@RequestBody Integer[] orders) {
