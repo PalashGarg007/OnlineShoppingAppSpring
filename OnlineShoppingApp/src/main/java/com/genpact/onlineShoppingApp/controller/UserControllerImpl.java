@@ -36,6 +36,7 @@ public class UserControllerImpl implements UserController {
 		.forEach(id -> System.out.println(id + " : " + productMap.get(id)));
 	}
 	
+	
 	@Override
 	@PutMapping("/orders1")
 	public void placeOrder1(@RequestBody Integer[] orders) {
