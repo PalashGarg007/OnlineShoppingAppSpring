@@ -110,7 +110,7 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@GetMapping("/logIn")
+	@PostMapping("/logIn")
 	public ResponseEntity<String> shopkeeperLogin(@RequestBody String loginDetails) throws IOException {
 		Shopkeeper credintials = mapper.readValue(loginDetails, Shopkeeper.class);
 		
@@ -122,7 +122,7 @@ public class VendorControllerImpl implements VendorController {
 		String shopkeeperString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shopkeeper);
 		
 		//for multi-threading
-		if(shopkeeper!=null) {login = true; notify();}
+//		if(shopkeeper!=null) {login = true; notify();}
 		
 		return (shopkeeper!=null)? ResponseEntity.ok(shopkeeperString) :
 			ResponseEntity.status(HttpStatus.BAD_REQUEST).body(shopkeeperString);
@@ -281,9 +281,9 @@ public class VendorControllerImpl implements VendorController {
 	@GetMapping("/totalRevinue")
 	public Double totalRevinue() {
 		//for multi-threading
-		while(!login) {
-			try {wait();}catch (Exception e) {}
-		}
+//		while(!login) {
+//			try {wait();}catch (Exception e) {}
+//		}
 		List<Product> productList = vendorService.inventoryList();
 		Double revinue = productList.stream()
 				.map((product)-> product.getCost()*product.getPurchased())

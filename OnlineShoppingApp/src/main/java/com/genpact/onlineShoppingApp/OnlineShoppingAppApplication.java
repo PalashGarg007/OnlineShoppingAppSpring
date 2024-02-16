@@ -1,11 +1,14 @@
 package com.genpact.onlineShoppingApp;
 
+import java.io.IOException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -14,6 +17,14 @@ import com.genpact.onlineShoppingApp.controller.AdminController;
 import com.genpact.onlineShoppingApp.controller.UserController;
 import com.genpact.onlineShoppingApp.controller.VendorController;
 import com.genpact.onlineShoppingApp.controller.Views;
+import com.genpact.onlineShoppingApp.entity.Shopkeeper;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+import com.squareup.okhttp.ResponseBody;
 
 @SuppressWarnings("unused")
 @RestController
@@ -38,6 +49,11 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 	}
     
     @Bean
+    RestTemplate getRestTemplate() {
+    	return new RestTemplate();
+    }
+    
+    @Bean
     Views getViews() {
     	return new Views();
     }
@@ -60,8 +76,10 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 //		vendorService.getProducts(0);
 //		vendorService.changePersonalInformadtion();
 		
-		streamExample();
-//		new BackgroundServices(vendorService);
+//		streamExample();
+//		new BackgroundServices(vendorController);
+		
+		System.out.println(new ApiHandler().shopkeeperLogInRequest("sophie_t", "turnerpass").toString());
 	}
 	
 	private static void streamExample() {
@@ -102,6 +120,44 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 //		
 	}
 
+}
+
+class ApiHandler{
+	private String baseUrl = "http://localhost:8080/";
+	private RestTemplate restTemplate = new RestTemplate();
+//	OkHttpClient client = new OkHttpClient();
+//	ObjectMapper mapper = JsonMapper.builder()
+//			.findAndAddModules()
+//			.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
+//			.build();
+	
+	public Shopkeeper shopkeeperLogInRequest(String userName, String password) throws IOException {
+		return restTemplate.postForObject(baseUrl + "shopkeeper/logIn",
+				"{\r\n"
+				+ "  \"userName\" : \"" + userName + "\",\r\n"
+				+ "  \"password\" : \"" + password + "\"\r\n"
+				+ "}",
+				Shopkeeper.class);
+		
+//		RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"),
+//				"{\r\n"
+//				+ "  \"userName\" : \"" + userName + "\",\r\n"
+//				+ "  \"password\" : \"" + password + "\"\r\n"
+//				+ "}");
+//		
+//		Request request = new Request.Builder()
+//				.url(baseUrl + "shopkeeper/logIn")
+//				.addHeader("Content-Type", "application/json")
+//				.post(requestBody)
+//				.build();
+//		
+//		String responseBody = client.newCall(request)
+//				.execute()
+//				.body()
+//				.string();
+//		
+//		return mapper.readValue(responseBody, Shopkeeper.class);
+	}
 }
 
 class BackgroundServices implements Runnable {

@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.genpact.onlineShoppingApp.entity.Customer;
@@ -44,7 +46,8 @@ public class AdminControllerImpl implements AdminController {
 	private Views views;
 	
 	@Override
-	@GetMapping("/customers/page={pageNumber}")
+	@ResponseBody
+	@GetMapping(value="/customers/page={pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> getCustomers(@PathVariable Integer pageNumber) throws IOException {
 		Page<Customer> currentPage = adminService.getCustomers(pageNumber, 5);
 		List<Customer> customers = currentPage.getContent();
