@@ -122,9 +122,13 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 
 }
 
-//how to get the value from ml file.
+
 
 class ApiHandler{
+	//how to get the value from ml file.
+	//add Httpheader
+	//uriComponentBuilder
+	//
 	private String baseUrl = "http://localhost:8080/";
 	private RestTemplate restTemplate = new RestTemplate();
 //	OkHttpClient client = new OkHttpClient();
