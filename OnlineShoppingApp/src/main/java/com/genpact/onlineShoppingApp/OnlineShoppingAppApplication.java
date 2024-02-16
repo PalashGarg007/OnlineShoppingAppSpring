@@ -122,6 +122,8 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 
 }
 
+//how to get the value from ml file.
+
 class ApiHandler{
 	private String baseUrl = "http://localhost:8080/";
 	private RestTemplate restTemplate = new RestTemplate();
