@@ -116,6 +116,9 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 
 }
 
+	//how to get the value from yml file.
+	//add Httpheader
+	//uriComponentBuilder
 @PropertySource("classpath:application.yml")
 class ApiHandler{
 	@Value("${base.url}")
