@@ -15,6 +15,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -46,24 +47,6 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 	@Autowired
 	private UserController userController;
 
-    @Bean
-    ObjectMapper getObjectMapper() {
-		return JsonMapper.builder()
-				.findAndAddModules()
-				.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-				.build();
-	}
-    
-    @Bean
-    RestTemplate getRestTemplate() {
-    	return new RestTemplate();
-    }
-    
-    @Bean
-    Views getViews() {
-    	return new Views();
-    }
-	
 	public static void main(String[] args) {
 		SpringApplication.run(OnlineShoppingAppApplication.class, args);
 		
@@ -116,18 +99,19 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 
 }
 
-	//how to get the value from yml file.
-	//add Httpheader
-	//uriComponentBuilder
 @PropertySource("classpath:application.yml")
 class ApiHandler{
-	@Value("${base.url}")
-	private String baseUrl;
+//	@Value("${base.url}")
+//	private String baseUrl;
+	private UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");
 	private RestTemplate restTemplate = new RestTemplate();
 	private HttpHeaders headers = new HttpHeaders();
 	
 	public Shopkeeper shopkeeperLogInRequest(String userName, String password) throws IOException, URISyntaxException {
-		URI uri = new URI(baseUrl + "/shopkeeper/logIn");
+//		URI uri = new URI(baseUrl + "/shopkeeper/logIn");
+		URI uri = builder.path("/shopkeeper/logIn")
+				.build()
+				.toUri();
 		headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
 		HttpEntity<String> request = new HttpEntity<>("{\r\n"
 				+ "  \"userName\" : \"" + userName + "\",\r\n"
