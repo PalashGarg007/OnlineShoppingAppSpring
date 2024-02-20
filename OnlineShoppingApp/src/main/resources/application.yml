@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/osa
+    username: root
+    password: abc123
+
+base:
+  url: http://localhost:8080

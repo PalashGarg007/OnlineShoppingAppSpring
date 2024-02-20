@@ -1,12 +1,18 @@
 package com.genpact.onlineShoppingApp;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -64,18 +70,6 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 	}
 
 	public void run(String... args) throws Exception {
-//		adminService.getCustomers(0);
-//		adminService.getShopkeepers(0);
-//		adminService.addNewPayment();
-//		adminService.getPayments(0);
-//		adminService.updateDiscountById();
-		
-//		vendorService.createAccount();
-//		vendorService.shopkeeperLogin();
-//		vendorService.addNewProduct();
-//		vendorService.getProducts(0);
-//		vendorService.changePersonalInformadtion();
-		
 //		streamExample();
 //		new BackgroundServices(vendorController);
 		
@@ -122,43 +116,24 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 
 }
 
-//how to get the value from ml file.
-
+@PropertySource("classpath:application.yml")
 class ApiHandler{
-	private String baseUrl = "http://localhost:8080/";
+	@Value("${base.url}")
+	private String baseUrl;
 	private RestTemplate restTemplate = new RestTemplate();
-//	OkHttpClient client = new OkHttpClient();
-//	ObjectMapper mapper = JsonMapper.builder()
-//			.findAndAddModules()
-//			.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
-//			.build();
+	private HttpHeaders headers = new HttpHeaders();
 	
-	public Shopkeeper shopkeeperLogInRequest(String userName, String password) throws IOException {
-		return restTemplate.postForObject(baseUrl + "shopkeeper/logIn",
-				"{\r\n"
+	public Shopkeeper shopkeeperLogInRequest(String userName, String password) throws IOException, URISyntaxException {
+		URI uri = new URI(baseUrl + "/shopkeeper/logIn");
+		headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+		HttpEntity<String> request = new HttpEntity<>("{\r\n"
 				+ "  \"userName\" : \"" + userName + "\",\r\n"
 				+ "  \"password\" : \"" + password + "\"\r\n"
 				+ "}",
-				Shopkeeper.class);
+				headers);
 		
-//		RequestBody requestBody = RequestBody.create(MediaType.parse("application/json"),
-//				"{\r\n"
-//				+ "  \"userName\" : \"" + userName + "\",\r\n"
-//				+ "  \"password\" : \"" + password + "\"\r\n"
-//				+ "}");
-//		
-//		Request request = new Request.Builder()
-//				.url(baseUrl + "shopkeeper/logIn")
-//				.addHeader("Content-Type", "application/json")
-//				.post(requestBody)
-//				.build();
-//		
-//		String responseBody = client.newCall(request)
-//				.execute()
-//				.body()
-//				.string();
-//		
-//		return mapper.readValue(responseBody, Shopkeeper.class);
+		return restTemplate.postForObject(uri, request, Shopkeeper.class);
+		
 	}
 }
 
