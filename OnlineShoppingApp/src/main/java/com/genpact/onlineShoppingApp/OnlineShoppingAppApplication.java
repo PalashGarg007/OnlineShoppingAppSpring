@@ -101,9 +101,11 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 
 @PropertySource("classpath:application.yml")
 class ApiHandler{
+	//TODO: Not able to fetch the url from yml file. 
 //	@Value("${base.url}")
 //	private String baseUrl;
 	private UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");
+	//TODO: Not able to use @Autowired?
 	private RestTemplate restTemplate = new RestTemplate();
 	private HttpHeaders headers = new HttpHeaders();
 	
