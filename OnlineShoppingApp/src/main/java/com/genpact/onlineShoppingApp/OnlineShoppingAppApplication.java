@@ -25,13 +25,6 @@ import com.genpact.onlineShoppingApp.controller.UserController;
 import com.genpact.onlineShoppingApp.controller.VendorController;
 import com.genpact.onlineShoppingApp.controller.Views;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.MultipartBuilder;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
-import com.squareup.okhttp.ResponseBody;
 
 @SuppressWarnings("unused")
 @RestController
@@ -97,33 +90,6 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 //		
 	}
 
-}
-
-@PropertySource("classpath:application.yml")
-class ApiHandler{
-	//TODO: Not able to fetch the url from yml file. 
-//	@Value("${base.url}")
-//	private String baseUrl;
-	private UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");
-	//TODO: Not able to use @Autowired?
-	private RestTemplate restTemplate = new RestTemplate();
-	private HttpHeaders headers = new HttpHeaders();
-	
-	public Shopkeeper shopkeeperLogInRequest(String userName, String password) throws IOException, URISyntaxException {
-//		URI uri = new URI(baseUrl + "/shopkeeper/logIn");
-		URI uri = builder.path("/shopkeeper/logIn")
-				.build()
-				.toUri();
-		headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
-		HttpEntity<String> request = new HttpEntity<>("{\r\n"
-				+ "  \"userName\" : \"" + userName + "\",\r\n"
-				+ "  \"password\" : \"" + password + "\"\r\n"
-				+ "}",
-				headers);
-		
-		return restTemplate.postForObject(uri, request, Shopkeeper.class);
-		
-	}
 }
 
 class BackgroundServices implements Runnable {
