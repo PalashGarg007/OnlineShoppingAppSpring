@@ -1,10 +1,10 @@
 package com.genpact.onlineShoppingApp.repository;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.springframework.data.domain.Page;
-
-import com.genpact.onlineShoppingApp.entity.Orders;
+import com.genpact.onlineShoppingApp.dto.UnacceptedOrders;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
 
@@ -20,26 +20,24 @@ public interface VendorService {
 	Shopkeeper getShopkeeper();
 	
 	/*should be able to change his details.*/
-	Integer cahngePersonalInformadtion(String contact, String email, String password); 
+	Shopkeeper cahngePersonalInformadtion(String contact, String email, String password); 
 	
 	/*add new product to the Shop.*/
-	Product addNewProduct(Product product);
-	
-	/*should be able to re-stock*/
-	//TODO: create method re-stock.
+	Product addAndUpdateProduct(Product product);
 	
 	/*See the list of all the products he(vendor) is selling.*/
 	Page<Product> getProducts(Integer pageNumber, Integer pageSize);
 	
 	/*should be able to accept orders.*/
-	Page<Object> viewUnacceptedOrders(Integer pageNumber, Integer pageSize);
-	Integer setUnacceptedOrders(Orders orders, Boolean isAccepted);
+	Page<UnacceptedOrders> getUnacceptedOrders(Integer pageNumber, Integer pageSize);
+	void setUnacceptedOrders(List<UnacceptedOrders> unacceptedOrders);
 
 	List<Product> inventoryList();
+
+	/*should be able to search products by name or category.*/
+	List<Product> searchProducts(String condition);
 	
 	/*should be able to add products by file.*/
-	//TODO: create method add products by file.
+	void addAndUpdateProductsByFile(Stream<String> tokens);
 	
-	/*should be able to search products by name or category.*/
-	//TODO: create method search.
 }

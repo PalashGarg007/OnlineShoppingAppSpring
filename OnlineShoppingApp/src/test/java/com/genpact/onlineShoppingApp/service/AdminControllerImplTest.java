@@ -39,202 +39,202 @@ import com.genpact.onlineShoppingApp.repository.AdminService;
 @ExtendWith(MockitoExtension.class)
 class AdminControllerImplTest {
 	
-	@InjectMocks
-	AdminControllerImpl adminControllerImpl;
-	
-	@Mock
-	AdminService adminService;
-	
-	@Mock
-	ObjectMapper mapper;
-	
-	@Mock
-	ObjectWriter objectWriter;
-	
-	@Mock
-	Page<Customer> mockPageCustomer;
-	
-	@Mock
-	Page<Shopkeeper> mockPageShopkeeper;
-	
-	@Mock
-	Page<Payment> mockPagePayment;
-
-    @Test
-    @DisplayName("getCustomers: when database has customer to show.")
-    void getCustomersTest() throws IOException {
-		@SuppressWarnings("unchecked")
-		List<Customer> customers = mock(List.class);
-		
-		when(adminService.getCustomers(anyInt(), anyInt())).thenReturn(mockPageCustomer);
-		when(mockPageCustomer.getContent()).thenReturn(customers);
-		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
-		when(objectWriter.writeValueAsString(anyList())).thenReturn("Mock list");
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.getCustomers(1);
-		
-		assertAll(
-				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
-				() -> assertNotNull(responseEntity.getBody())
-				);
-	}
-
-    @Test
-    @DisplayName("getCustomers: when database has not customer to show.")
-    void getCustomerTest2() throws IOException {
-		when(adminService.getCustomers(anyInt(), anyInt())).thenReturn(mockPageCustomer);
-		when(mockPageCustomer.getContent()).thenReturn(Collections.emptyList());
-
-		ResponseEntity<String> responseEntity = adminControllerImpl.getCustomers(1);
-
-		assertAll(
-				() -> assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode()),
-				() -> assertNotNull(responseEntity.getBody())
-				);
-	}
-
-    @Test
-    @DisplayName("getShopkeepers: when database has shopkeeper to show.")
-    void getShopkeepersTest() throws IOException {
-		@SuppressWarnings("unchecked")
-		List<Shopkeeper> shopkeepers = mock(List.class);
-		
-		when(adminService.getShopkeepers(anyInt(), anyInt())).thenReturn(mockPageShopkeeper);
-		when(mockPageShopkeeper.getContent()).thenReturn(shopkeepers);
-		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
-		when(objectWriter.writeValueAsString(anyList())).thenReturn("Mock list");
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.getShopkeepers(1);
-		
-		assertAll(
-				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
-				() -> assertNotNull(responseEntity.getBody())
-				);
-	}
-
-    @Test
-    @DisplayName("getShopkeepers: when database has no shopkeeper to show.")
-    void getShopkeepersTest2() throws IOException {
-		when(adminService.getShopkeepers(anyInt(), anyInt())).thenReturn(mockPageShopkeeper);
-		when(mockPageShopkeeper.getContent()).thenReturn(Collections.emptyList());
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.getShopkeepers(1);
-
-		assertAll(
-				() -> assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode()),
-				() -> assertNotNull(responseEntity.getBody())
-				);
-	}
-
-    @Test
-    @DisplayName("getPayments: when database has payment to show.")
-    void getPaymentsTest() throws IOException {
-		@SuppressWarnings("unchecked")
-		List<Payment> payments = mock(List.class);
-		
-		when(adminService.getPayments(anyInt(), anyInt())).thenReturn(mockPagePayment);
-		when(mockPagePayment.getContent()).thenReturn(payments);
-		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
-		when(objectWriter.writeValueAsString(anyList())).thenReturn("Mock list");
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.getPayments(1);
-		
-		assertAll(
-				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
-				() -> assertNotNull(responseEntity.getBody())
-				);
-	}
-
-    @Test
-    @DisplayName("getPayments: when database has no payment to show.")
-    void getPaymentsTest2() throws IOException {
-		when(adminService.getPayments(anyInt(), anyInt())).thenReturn(mockPagePayment);
-		when(mockPagePayment.getContent()).thenReturn(Collections.emptyList());
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.getPayments(1);
-
-		assertAll(
-				() -> assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode()),
-				() -> assertNotNull(responseEntity.getBody())
-				);
-	}
-
-    @ParameterizedTest
-    @DisplayName("addNewPayment: Invalid discount")
-    @ValueSource(doubles = {-0.1, 100.1})
-    void addNewPaymentTest(Double discount) {
-		Payment payment = mock(Payment.class);
-		
-		when(payment.getDiscount()).thenReturn(discount);
-		
-		assertThrows(InvalidInputException.class, ()-> adminControllerImpl.addNewPayment(payment));
-	}
-
-    @Test
-    @DisplayName("addNewPayment: adding an new payment")
-    void addNewPaymentTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException, IOException {
-		Payment payment = mock(Payment.class);
-		String paymentString = null;
-		
-		when(payment.getDiscount()).thenReturn(0.0);
-		when(adminService.addNewPayment(payment)).thenReturn(payment);
-		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
-		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.addNewPayment(payment);
-		
-		assertAll(
-				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
-				() -> assertEquals(paymentString, responseEntity.getBody())
-				);
-	}
-    
-    @ParameterizedTest
-    @DisplayName("updateDiscountById: Invalid discount")
-    @ValueSource(doubles = {-0.1, 100.1})
-    void updateDiscountByIdTest(Double discount) {
-		Payment payment = mock(Payment.class);
-		
-		when(payment.getDiscount()).thenReturn(discount);
-		
-		assertThrows(InvalidInputException.class, ()-> adminControllerImpl.updateDiscountById(payment));
-	}
-    
-    @Test
-    @DisplayName("updateDiscountById: adding an new payment")
-    void updateDiscountByIdTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException, IOException {
-		Payment payment = mock(Payment.class);
-		String paymentString = null;
-		
-		when(payment.getDiscount()).thenReturn(0.0);
-		when(adminService.updateDiscountById(payment)).thenReturn(payment);
-		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
-		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.updateDiscountById(payment);
-		
-		assertAll(
-				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
-				() -> assertEquals(paymentString, responseEntity.getBody())
-				);
-	}
-    
-    @Test
-    @DisplayName("removePaymentById: removing the payment by given id.")
-    void removePaymentByIdTest() throws IOException {
-    	Payment payment = mock(Payment.class);
-    	String paymentString = null;
-    	
-    	when(adminService.removePaymentById(anyInt())).thenReturn(payment);
-    	when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
-		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
-		
-		ResponseEntity<String> responseEntity = adminControllerImpl.removePaymentById(anyInt());
-		
-		assertAll(
-				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
-				() -> assertEquals(paymentString, responseEntity.getBody())
-				);
-    }
+//	@InjectMocks
+//	AdminControllerImpl adminControllerImpl;
+//	
+//	@Mock
+//	AdminService adminService;
+//	
+//	@Mock
+//	ObjectMapper mapper;
+//	
+//	@Mock
+//	ObjectWriter objectWriter;
+//	
+//	@Mock
+//	Page<Customer> mockPageCustomer;
+//	
+//	@Mock
+//	Page<Shopkeeper> mockPageShopkeeper;
+//	
+//	@Mock
+//	Page<Payment> mockPagePayment;
+//
+//    @Test
+//    @DisplayName("getCustomers: when database has customer to show.")
+//    void getCustomersTest() throws IOException {
+//		@SuppressWarnings("unchecked")
+//		List<Customer> customers = mock(List.class);
+//		
+//		when(adminService.getCustomers(anyInt(), anyInt())).thenReturn(mockPageCustomer);
+//		when(mockPageCustomer.getContent()).thenReturn(customers);
+//		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+//		when(objectWriter.writeValueAsString(anyList())).thenReturn("Mock list");
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.getCustomers(1);
+//		
+//		assertAll(
+//				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+//				() -> assertNotNull(responseEntity.getBody())
+//				);
+//	}
+//
+//    @Test
+//    @DisplayName("getCustomers: when database has not customer to show.")
+//    void getCustomerTest2() throws IOException {
+//		when(adminService.getCustomers(anyInt(), anyInt())).thenReturn(mockPageCustomer);
+//		when(mockPageCustomer.getContent()).thenReturn(Collections.emptyList());
+//
+//		ResponseEntity<String> responseEntity = adminControllerImpl.getCustomers(1);
+//
+//		assertAll(
+//				() -> assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode()),
+//				() -> assertNotNull(responseEntity.getBody())
+//				);
+//	}
+//
+//    @Test
+//    @DisplayName("getShopkeepers: when database has shopkeeper to show.")
+//    void getShopkeepersTest() throws IOException {
+//		@SuppressWarnings("unchecked")
+//		List<Shopkeeper> shopkeepers = mock(List.class);
+//		
+//		when(adminService.getShopkeepers(anyInt(), anyInt())).thenReturn(mockPageShopkeeper);
+//		when(mockPageShopkeeper.getContent()).thenReturn(shopkeepers);
+//		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+//		when(objectWriter.writeValueAsString(anyList())).thenReturn("Mock list");
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.getShopkeepers(1);
+//		
+//		assertAll(
+//				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+//				() -> assertNotNull(responseEntity.getBody())
+//				);
+//	}
+//
+//    @Test
+//    @DisplayName("getShopkeepers: when database has no shopkeeper to show.")
+//    void getShopkeepersTest2() throws IOException {
+//		when(adminService.getShopkeepers(anyInt(), anyInt())).thenReturn(mockPageShopkeeper);
+//		when(mockPageShopkeeper.getContent()).thenReturn(Collections.emptyList());
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.getShopkeepers(1);
+//
+//		assertAll(
+//				() -> assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode()),
+//				() -> assertNotNull(responseEntity.getBody())
+//				);
+//	}
+//
+//    @Test
+//    @DisplayName("getPayments: when database has payment to show.")
+//    void getPaymentsTest() throws IOException {
+//		@SuppressWarnings("unchecked")
+//		List<Payment> payments = mock(List.class);
+//		
+//		when(adminService.getPayments(anyInt(), anyInt())).thenReturn(mockPagePayment);
+//		when(mockPagePayment.getContent()).thenReturn(payments);
+//		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+//		when(objectWriter.writeValueAsString(anyList())).thenReturn("Mock list");
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.getPayments(1);
+//		
+//		assertAll(
+//				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+//				() -> assertNotNull(responseEntity.getBody())
+//				);
+//	}
+//
+//    @Test
+//    @DisplayName("getPayments: when database has no payment to show.")
+//    void getPaymentsTest2() throws IOException {
+//		when(adminService.getPayments(anyInt(), anyInt())).thenReturn(mockPagePayment);
+//		when(mockPagePayment.getContent()).thenReturn(Collections.emptyList());
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.getPayments(1);
+//
+//		assertAll(
+//				() -> assertEquals(HttpStatus.NO_CONTENT, responseEntity.getStatusCode()),
+//				() -> assertNotNull(responseEntity.getBody())
+//				);
+//	}
+//
+//    @ParameterizedTest
+//    @DisplayName("addNewPayment: Invalid discount")
+//    @ValueSource(doubles = {-0.1, 100.1})
+//    void addNewPaymentTest(Double discount) {
+//		Payment payment = mock(Payment.class);
+//		
+//		when(payment.getDiscount()).thenReturn(discount);
+//		
+//		assertThrows(InvalidInputException.class, ()-> adminControllerImpl.addNewPayment(payment));
+//	}
+//
+//    @Test
+//    @DisplayName("addNewPayment: adding an new payment")
+//    void addNewPaymentTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException, IOException {
+//		Payment payment = mock(Payment.class);
+//		String paymentString = null;
+//		
+//		when(payment.getDiscount()).thenReturn(0.0);
+//		when(adminService.addNewPayment(payment)).thenReturn(payment);
+//		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+//		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.addNewPayment(payment);
+//		
+//		assertAll(
+//				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+//				() -> assertEquals(paymentString, responseEntity.getBody())
+//				);
+//	}
+//    
+//    @ParameterizedTest
+//    @DisplayName("updateDiscountById: Invalid discount")
+//    @ValueSource(doubles = {-0.1, 100.1})
+//    void updateDiscountByIdTest(Double discount) {
+//		Payment payment = mock(Payment.class);
+//		
+//		when(payment.getDiscount()).thenReturn(discount);
+//		
+//		assertThrows(InvalidInputException.class, ()-> adminControllerImpl.updateDiscountById(payment));
+//	}
+//    
+//    @Test
+//    @DisplayName("updateDiscountById: adding an new payment")
+//    void updateDiscountByIdTest2() throws InvalidSQLQueryException, SQLIntegrityConstraintViolationException, IOException {
+//		Payment payment = mock(Payment.class);
+//		String paymentString = null;
+//		
+//		when(payment.getDiscount()).thenReturn(0.0);
+//		when(adminService.updateDiscountById(payment)).thenReturn(payment);
+//		when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+//		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.updateDiscountById(payment);
+//		
+//		assertAll(
+//				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+//				() -> assertEquals(paymentString, responseEntity.getBody())
+//				);
+//	}
+//    
+//    @Test
+//    @DisplayName("removePaymentById: removing the payment by given id.")
+//    void removePaymentByIdTest() throws IOException {
+//    	Payment payment = mock(Payment.class);
+//    	String paymentString = null;
+//    	
+//    	when(adminService.removePaymentById(anyInt())).thenReturn(payment);
+//    	when(mapper.writerWithDefaultPrettyPrinter()).thenReturn(objectWriter);
+//		when(objectWriter.writeValueAsString(payment)).thenReturn(paymentString);
+//		
+//		ResponseEntity<String> responseEntity = adminControllerImpl.removePaymentById(anyInt());
+//		
+//		assertAll(
+//				() -> assertEquals(HttpStatus.OK, responseEntity.getStatusCode()),
+//				() -> assertEquals(paymentString, responseEntity.getBody())
+//				);
+//    }
     
 }

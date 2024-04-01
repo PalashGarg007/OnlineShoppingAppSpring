@@ -18,4 +18,6 @@ public interface ProductRepository extends JpaRepository<Product, Integer>{
 	
 	Page<Product> findBySid(Integer sid, Pageable pageRequest);
 	
+	List<Product> findByAllIgnoringCaseNameOrCategoryOrBrandOrderByCost(String name, String category, String brand);
+	
 }

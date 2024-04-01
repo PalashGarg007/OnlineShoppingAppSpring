@@ -1,20 +1,21 @@
 package com.genpact.onlineShoppingApp.repository;
 
 import java.time.LocalDate;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.genpact.onlineShoppingApp.dto.UnacceptedOrders;
 import com.genpact.onlineShoppingApp.entity.Orders;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
 import com.genpact.onlineShoppingApp.exception.InvalidInputException;
-import com.genpact.onlineShoppingApp.exception.OSAException;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -57,14 +58,19 @@ public class VendorServiceImpl implements VendorService{
 
 	@Override
 	@Transactional
-	public Product addNewProduct(Product newProduct) {
+	public Product addAndUpdateProduct(Product newProduct) {
 		Integer sid = currentShopkeeper.getId();
 		
-		if(!productRepository
+		List<Product> productList = productRepository
 				.findByAllIgnoringCaseSidAndNameAndCategory(
-						sid, newProduct.getName(), newProduct.getCategory())
-				.isEmpty())
-			return null;
+				sid, newProduct.getName(), newProduct.getCategory()); 
+		if(!productList.isEmpty()) {
+			Product existingProduct = productList.get(0);
+			if(newProduct.getCost()!=null)
+				existingProduct.setCost(newProduct.getCost());
+			existingProduct.setWarehouse(newProduct.getWarehouse());
+			return productRepository.save(existingProduct);
+		}
 		
 		Double rating = 0d;
 		List<Product> similarProductList = productRepository.findByAllIgnoreCaseCategoryAndName(
@@ -80,69 +86,91 @@ public class VendorServiceImpl implements VendorService{
 		return productRepository.save(newProduct); 
 	}
 
-	
 	@Override
 	public Page<Product> getProducts(Integer pageNumber, Integer pageSize) {
 		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 		return productRepository.findBySid(currentShopkeeper.getId(), pageRequest);
 	}
 
-	
 	@Override
 	public Shopkeeper getShopkeeper() {
 		return currentShopkeeper;
 	}
 
 	@Override
-	public Integer cahngePersonalInformadtion(String contact, String email, String password) {
-		Integer result = 0;
-		
-		if(!contact.isEmpty()) {
+	public Shopkeeper cahngePersonalInformadtion(String contact, String email, String password) {
+
+		if(!contact.isEmpty())
 			currentShopkeeper.setContact(contact);
-			result = 1;
-		}
-		if(!email.isEmpty()) {
+		if(!email.isEmpty())
 			currentShopkeeper.setEmail(email);
-			result = 1;
-		}
-		if(!password.isEmpty()) {
+		if(!password.isEmpty())
 			currentShopkeeper.setPassword(password);
-			result = 1;
-		}
 		
-		shopkeeperRepository.save(currentShopkeeper);
-		return result;
+		currentShopkeeper = shopkeeperRepository.save(currentShopkeeper);
+		
+		return currentShopkeeper;
 	}
 
 	@Override
-	public Page<Object> viewUnacceptedOrders(Integer pageNumber, Integer pageSize) {
+	public Page<UnacceptedOrders> getUnacceptedOrders(Integer pageNumber, Integer pageSize) {
 		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
 		return ordersRepository.findByIdAndConfirmationFalse(currentShopkeeper.getId(), pageRequest);
 	}
 	
-	@Transactional
 	@Override
-	public Integer setUnacceptedOrders(Orders orders, Boolean isAccepted)throws OSAException {
-		Integer result = 0;
-		
-		if(isAccepted) {
+	@Transactional
+	@Async
+	public void setUnacceptedOrders(List<UnacceptedOrders> unacceptedOrders) {
+		unacceptedOrders.forEach(x -> {
+			Orders orders = ordersRepository.findById(x.getId()).orElseThrow();
 			orders.setConfirmation(true);
 			orders.setShippingDate(LocalDate.now());
-			ordersRepository.save(orders);
+			orders = ordersRepository.save(orders);
 			
-			Optional<Product> product = productRepository.findById(orders.getPid());
-			product.get().setWarehouse(product.get().getWarehouse()-orders.getQuantity());
-			product.get().setPurchased(product.get().getPurchased()+orders.getQuantity());
-			productRepository.save(product.get());
-			
-			result = 1;
-		}
-		
-		return result;
+			Product product = productRepository.findById(orders.getPid()).orElseThrow();
+			product.setWarehouse(product.getWarehouse() - orders.getQuantity());
+			product.setPurchased(product.getPurchased() + orders.getQuantity());
+			productRepository.save(product);
+		});
 	}
 	
 	@Override
 	public List<Product> inventoryList() {
 		return currentShopkeeper.getProducts();
 	}
+
+	
+	@Override
+	public List<Product> searchProducts(String condition) {
+		List<Product> products = new LinkedList<>();
+		String[] conditions = condition.split(" ");
+		
+		for(String minCondition: conditions) {
+			products.addAll(productRepository.findByAllIgnoringCaseNameOrCategoryOrBrandOrderByCost(minCondition, minCondition, minCondition));
+		}
+		
+		return products.stream()
+				.distinct()
+				.toList();
+	}
+
+	@Override
+	@Async
+	public void addAndUpdateProductsByFile(Stream<String> tokens) {
+		tokens.parallel().forEach(data -> {
+			String[] productStrings = data.split(",");
+			Product product = new Product();
+			
+			product.setName(productStrings[0].strip());
+			product.setBrand(productStrings[1].strip());
+			product.setCategory(productStrings[2].strip());
+			product.setCost(Double.valueOf(productStrings[3].strip()));
+			product.setWarehouse(Integer.valueOf(productStrings[4].strip()));
+			
+			addAndUpdateProduct(product);
+		});
+		
+	}
+	
 }

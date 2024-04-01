@@ -21,12 +21,13 @@ class ApiHandler{
 	@Value("${base.url}")
 	private String baseUrl;
 	private UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:8080");
-	@Autowired
-	private RestTemplate restTemplate;
+//	@Autowired
+//	private RestTemplate restTemplate;
+	private RestTemplate restTemplate = new RestTemplate();
 	private HttpHeaders headers = new HttpHeaders();
 	
 	public Shopkeeper shopkeeperLogInRequest(String userName, String password) throws IOException, URISyntaxException {
-		System.out.println("--------------> " + baseUrl);
+//		System.out.println("--------------> " + baseUrl);
 //		URI uri = new URI(baseUrl + "/shopkeeper/logIn");
 		URI uri = builder.path("/shopkeeper/logIn")
 				.build()

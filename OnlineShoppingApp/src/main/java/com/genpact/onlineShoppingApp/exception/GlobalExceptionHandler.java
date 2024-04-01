@@ -26,6 +26,14 @@ public class GlobalExceptionHandler {
 				.body("[\"Error\": \""+ e.getMessage()+ "\"]");
 	}
 	
+	@ExceptionHandler(ResourceNotFoundException.class)
+	@ResponseBody
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	public ResponseEntity<String> handleResourcedNotFoundException(ResourceNotFoundException e){
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body("[\"Error\": \""+ e.getMessage() + "\"]");
+	}
+	
 }
 
 // exception mapper

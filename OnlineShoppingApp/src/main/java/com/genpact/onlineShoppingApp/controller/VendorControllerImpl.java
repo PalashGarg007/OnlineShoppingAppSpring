@@ -1,5 +1,8 @@
 package com.genpact.onlineShoppingApp.controller;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
@@ -10,16 +13,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.genpact.onlineShoppingApp.dto.UnacceptedOrders;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
 import com.genpact.onlineShoppingApp.exception.InvalidInputException;
@@ -27,25 +31,18 @@ import com.genpact.onlineShoppingApp.repository.VendorService;
 
 @RestController
 @RequestMapping("/shopkeeper")
-@Controller
 public class VendorControllerImpl implements VendorController {
 	@Autowired
 	private VendorService vendorService;
-	
-	@Autowired
-	private ObjectMapper mapper;
 	
 	private Logger logger = LoggerFactory.getLogger(VendorControllerImpl.class);
 	
 	@Autowired
 	private Views views;
 	
-	//for multi-threading
-	private Boolean login = false;
-	
 	@Override
-	@PostMapping("/newAccount")
-	public ResponseEntity<String> createAccount(@RequestBody Shopkeeper shopkeeper) throws IOException {
+	@PostMapping(value = "/newAccount", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Shopkeeper> createAccount(@RequestBody Shopkeeper shopkeeper) throws IOException {
 		Function<String, Boolean> nameCondition = (name) ->(
 				name.matches("^([a-zA-Z])(?([ ][a-zA-Z])){1,}$"));
 		
@@ -92,84 +89,64 @@ public class VendorControllerImpl implements VendorController {
                     """);
 		}
 		
-		Shopkeeper result = vendorService.createAccount(shopkeeper);
-		String resultString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+		Shopkeeper newShopkeeper = vendorService.createAccount(shopkeeper);
 		
-		logger.info((result!=null)?views.dotedBox("Account created successfully :)") :
+		logger.info((newShopkeeper!=null)?views.dotedBox("Account created successfully :)") :
 			views.dotedBox("Account can't be created successfully :("));
 		
-		if(result == null)
-			return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(resultString);
-		
-		//for multi-threading
-		login = true;
-		notify();
-		
-		return ResponseEntity.ok(resultString);
+		return (newShopkeeper == null)? ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(null):
+			ResponseEntity.status(HttpStatus.CREATED).body(newShopkeeper);
 		
 	}
 
 	@Override
-	@PostMapping("/logIn")
-	public ResponseEntity<String> shopkeeperLogin(@RequestBody String loginDetails) throws IOException {
-		Shopkeeper credintials = mapper.readValue(loginDetails, Shopkeeper.class);
-		
-		Shopkeeper shopkeeper = vendorService.shopkeeperLogin(credintials.getUserName(), credintials.getPassword());
+	@PostMapping(value = "/logIn", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Shopkeeper> shopkeeperLogin(@RequestBody Shopkeeper loginDetails) throws IOException {		
+		Shopkeeper shopkeeper = vendorService.shopkeeperLogin(loginDetails.getUserName(), loginDetails.getPassword());
 		
 		logger.info((shopkeeper!=null)?views.dotedBox("Login Successfully :)") :
 			views.dotedBox("Login Unsuccessfully :("));
 		
-		String shopkeeperString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(shopkeeper);
-		
-		//for multi-threading
-//		if(shopkeeper!=null) {login = true; notify();}
-		
-		return (shopkeeper!=null)? ResponseEntity.ok(shopkeeperString) :
-			ResponseEntity.status(HttpStatus.BAD_REQUEST).body(shopkeeperString);
+		return (shopkeeper!=null)? ResponseEntity.ok(shopkeeper) :
+			ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		
 	}
 	
 	@Override
-	@PostMapping("/product/addNew")
-	public ResponseEntity<String> addNewProduct(@RequestBody String productString) throws IOException {
-		Product product;
-		
-		try {
-			product = mapper.readValue(productString, Product.class);
-		} catch (JsonProcessingException e) {
-			throw new InvalidInputException(e.getMessage());
-		}
-		
+	@PostMapping(value = "/product/addProduct", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Product> addAndUpdateProduct(@RequestBody Product product) throws IOException {
 		if(product.getCost()<=0)
 			throw new InvalidInputException("Invalid cost.");
 		
 		if(product.getWarehouse()<0)
 			throw new InvalidInputException("No of products in the warehouse can't be negative.");
 		
-		Product result = vendorService.addNewProduct(product);
-		String resultString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(result);
+		Product newProduct = vendorService.addAndUpdateProduct(product);
 		
-		logger.info((result!=null) ? views.dotedBox("Product added successfully :)") :
+		logger.info((newProduct!=null) ? views.dotedBox("Product added successfully :)") :
 				views.dotedBox("A Product with the same name and category already exist :("));
 		
-		return (result!=null) ? ResponseEntity.ok(resultString) :
-			ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(resultString);
+		return (newProduct!=null) ? ResponseEntity.status(201).body(newProduct) :
+			ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(null);
 		
 	}
 
 	@Override
-	public Boolean getProducts(Integer pageNumber) {
+	@GetMapping(value = "products/page={pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<Product>> getProducts(@PathVariable Integer pageNumber) {
 		Page<Product> currentPage = vendorService.getProducts(pageNumber, 5);
 		List<Product> products = currentPage.getContent();
 		if(products.isEmpty())
-			return false;
-		products.forEach(product -> System.out.println(views.solidBox(views.viewOfProductsForVendor(product), 30) + "\n"));
+			return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
 		
-		return true;
+		products.forEach(product -> logger.info(views.solidBox(views.viewOfProductsForVendor(product), 30) + "\n"));
+					
+		return ResponseEntity.ok(products);
 	}
 
 	@Override
-	public void changePersonalInformadtion() {
+	@PutMapping(value = "/changePersonalInformation", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Shopkeeper> changePersonalInformadtion(@RequestBody Shopkeeper shopkeeper) {
 		Function<String, Boolean> contactCondition = (contact) -> (
 				contact.matches("^\\d{10}$"));
 		
@@ -181,114 +158,86 @@ public class VendorControllerImpl implements VendorController {
 		
 		Function<String, Boolean> passwordCondition = (password) -> (
 				(password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$")));
-		int result = 0;
-		Shopkeeper shopkeeper = vendorService.getShopkeeper();
-		@SuppressWarnings("resource")
-		Scanner scanner = new Scanner(System.in);
-		System.out.println("\n" +views.solidBox(views.viewOfShopkeeperForVendor(shopkeeper), 45));
 		
-		String contact = "";
-		System.out.print("\nDo you want to change your Contact Number (Y)or(N): ");
-		String conformation = scanner.nextLine();
-		while(!(conformation.equalsIgnoreCase("N") || conformation.equalsIgnoreCase("Y"))) {
-			System.out.print("Do you want to change your Contact Number (Y)or(N): ");
-			conformation = scanner.nextLine();
-		}
-		if(conformation.equalsIgnoreCase("Y")) {
-			System.out.print("\nEnter Your Contact Number: ");
-			contact = scanner.nextLine().strip();
-			while(!contactCondition.apply(contact)) {
-				System.out.print("\nEnter a valid 10 digits Contact Number: ");
-				contact = scanner.nextLine().strip();
-			}
-		}
+		if(shopkeeper.getContact()!=null && !contactCondition.apply(shopkeeper.getContact()))
+				throw new InvalidInputException("Enter a valid contact number.");
 		
-		String email = "";
-		System.out.print("\nDo you want to change your Email (Y)or(N): ");
-		conformation = scanner.nextLine();
-		while(!(conformation.equalsIgnoreCase("N") || conformation.equalsIgnoreCase("Y"))) {
-			System.out.print("Do you want to change your Email (Y)or(N): ");
-			conformation = scanner.nextLine();
-		}
-		if(conformation.equalsIgnoreCase("Y")) {
-			System.out.print("\nEnter Your Email ID: ");
-			email = scanner.nextLine().strip();
-			while(!emailCondition.apply(email)) {
-				System.out.print("""
-                        
-                        The following restrictions are imposed in the email address local part:
-                        	1. Dot isn’t allowed at the start and end of the local part.
-                        	2. Consecutive dots aren’t allowed.
-                        	3. A maximum of 64 characters are allowed.
-                        Restrictions for the domain part in this regular expression include:
-                        	1. Hyphen “-” and dot “.” aren’t allowed at the start and end of the domain part.
-                        	2. No consecutive dots.
-                        
-                        """);
-				System.out.print("Enter a valid Email ID: ");
-				email = scanner.nextLine().strip();
-			}
-		}
+		if(shopkeeper.getEmail()!=null && !emailCondition.apply(shopkeeper.getEmail()))
+				throw new InvalidInputException("Invalid Email ID.");
 		
-		String password = "";
-		System.out.print("\nDo you want to change your Password (Y)or(N): ");
-		conformation = scanner.nextLine();
-		while(!(conformation.equalsIgnoreCase("N") || conformation.equalsIgnoreCase("Y"))) {
-			System.out.print("Do you want to change your Password (Y)or(N): ");
-			conformation = scanner.nextLine();
-		}
-		while(conformation.equalsIgnoreCase("Y")) {
-			System.out.print("\nEnter your Current Password: ");
-			String currentPassword = scanner.nextLine().strip();
-			if(!currentPassword.equals(shopkeeper.getPassword())) {
-				System.out.print("\n\bWrong password!!");
-				continue;
-			}
-			System.out.print("\nEnter Your New Password: ");
-			password = scanner.nextLine().strip();
-			while(!passwordCondition.apply(password)) {
-				System.out.print("""
-                        
-                        Password must contain:
-                        	1. At least one Special character.
-                        	2. Minimun length of 8.
-                        	3. At least one number.
-                        	4. At least one lower and one upper cahracter.
-                        	5. Does't contain space, tabs, etc.
-                        
-                        
-                        Enter a valid password: \
-                        """);
-				password = scanner.nextLine().strip();
-			}
-			break;
-		}
+		if(shopkeeper.getPassword()!=null && !passwordCondition.apply(shopkeeper.getPassword()))
+                throw new InvalidInputException("Enter a valid password");
 		
-		result = vendorService.cahngePersonalInformadtion(contact, email, password);
-		System.out.println("\n" + ((result==1)? views.dotedBox("Information updated successfully :)") :
-			views.dotedBox("Information was't updated :(")));
+		Shopkeeper updatedShopkeeper = vendorService.cahngePersonalInformadtion(
+				shopkeeper.getContact(), shopkeeper.getEmail(), shopkeeper.getPassword());
 		
-		if(!(contact.isEmpty() && email.isEmpty()))
-			System.out.println("\n" + views.viewOfShopkeeperForVendor(shopkeeper) + "\n");
+		logger.info((updatedShopkeeper!=null)? views.dotedBox("Shopkeeper updated successfully :)") :
+				views.dotedBox("Shopkeeper not updated successfully :("));
+		
+		return (shopkeeper!=null)? ResponseEntity.ok(updatedShopkeeper) :
+				ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(null);
+		
 	}
 
 	@Override
-	public void setUnacceptedOrders() {
-		//ToDo:
+	@GetMapping(value = "/unAcceptedOrders/page={pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<UnacceptedOrders>> getUnacceptedOrders(@PathVariable Integer pageNumber){
+		Page<UnacceptedOrders> currentPage = vendorService.getUnacceptedOrders(pageNumber, 5);
+		List<UnacceptedOrders> unacceptedOrders = currentPage.getContent();
+		
+		logger.info(unacceptedOrders.toString());
+		
+		return (unacceptedOrders.isEmpty())? ResponseEntity.status(HttpStatus.NO_CONTENT).body(null):
+				ResponseEntity.ok(unacceptedOrders);
 	}
 	
 	@Override
-	@GetMapping("/totalRevinue")
-	public Double totalRevinue() {
-		//for multi-threading
-//		while(!login) {
-//			try {wait();}catch (Exception e) {}
-//		}
-		List<Product> productList = vendorService.inventoryList();
-		Double revinue = productList.stream()
-				.map((product)-> product.getCost()*product.getPurchased())
-				.reduce(0.0, (sum, x) -> sum + x);
-		return revinue;
+	@PutMapping(value = "/unacceptableOrders", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<String> setUnacceptedOrders(@RequestBody List<UnacceptedOrders> unacceptedOrders) {
+		if(unacceptedOrders.isEmpty())
+			return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(null);
+		
+		unacceptedOrders = unacceptedOrders.stream()
+				.filter(s -> s.getConfirmation()==true)
+				.toList();
+		
+		vendorService.setUnacceptedOrders(unacceptedOrders);
+		
+		return ResponseEntity.ok("Done");
 	}
 
+	@Override
+	@GetMapping(value = "/search={condition}?page={pageNo}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<Product>> searchProducts(@PathVariable String condition, @PathVariable Integer pageNo){
+		List<Product> products = vendorService.searchProducts(condition);
+		
+		return (products.isEmpty())? ResponseEntity.status(HttpStatus.NO_CONTENT).body(null) :
+			ResponseEntity.ok(products);
+	}
+	
+	@Override
+	@PostMapping(value = "/updateByFile")
+	public ResponseEntity<String> addAndUpdateProductsByFile() throws IOException {
+		try {
+			File file = new File("InputProducts.txt");
+			if(!file.exists()) {
+				file.createNewFile();
+				
+				FileWriter writer = new FileWriter("InputProducts.txt");
+				writer.write("name, brand, category, cost, warehouse");
+				writer.close();
+				return ResponseEntity.status(HttpStatus.CREATED).body("New file created.");
+			}
+			
+			Scanner Reader = new Scanner(file);
+			Reader.nextLine(); //skip first line.
+			vendorService.addAndUpdateProductsByFile(Reader.tokens());
+            Reader.close();
+			
+		} catch (FileNotFoundException e) {
+			logger.error(e.getMessage());
+		}
+		
+		return ResponseEntity.ok("Products added successfully.");
+	}
 }
