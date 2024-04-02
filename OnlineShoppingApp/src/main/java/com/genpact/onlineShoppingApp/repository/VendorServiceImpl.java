@@ -5,6 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,6 +33,8 @@ public class VendorServiceImpl implements VendorService{
 	@Autowired
 	private OrdersRepository ordersRepository;
 	
+	private Logger logger = LoggerFactory.getLogger(VendorServiceImpl.class);
+	
 	@Override
 	@Transactional
 	public Shopkeeper createAccount(Shopkeeper shopkeeper) {
@@ -39,8 +43,11 @@ public class VendorServiceImpl implements VendorService{
 		
 		Shopkeeper newShopkeeper = new Shopkeeper(shopkeeper.getName(), shopkeeper.getContact(),
 				shopkeeper.getEmail(), shopkeeper.getUserName(), shopkeeper.getPassword());
-		
-		currentShopkeeper = shopkeeperRepository.save(newShopkeeper);
+		try {
+			currentShopkeeper = shopkeeperRepository.save(newShopkeeper);
+		} catch (Exception e) {
+			throw new InvalidInputException("contact alrady exist.", e);
+		}
 		
 		return currentShopkeeper;
 	}
@@ -158,17 +165,22 @@ public class VendorServiceImpl implements VendorService{
 	@Override
 	@Async
 	public void addAndUpdateProductsByFile(Stream<String> tokens) {
-		tokens.parallel().forEach(data -> {
+		tokens.parallel()
+		.skip(1) // skipping the first headder line.
+		.forEach(data -> {
 			String[] productStrings = data.split(",");
-			Product product = new Product();
-			
-			product.setName(productStrings[0].strip());
-			product.setBrand(productStrings[1].strip());
-			product.setCategory(productStrings[2].strip());
-			product.setCost(Double.valueOf(productStrings[3].strip()));
-			product.setWarehouse(Integer.valueOf(productStrings[4].strip()));
-			
-			addAndUpdateProduct(product);
+			if(productStrings.length==5) {
+				Product product = new Product();
+				
+				product.setName(productStrings[0].strip());
+				product.setBrand(productStrings[1].strip());
+				product.setCategory(productStrings[2].strip());
+				product.setCost(Double.valueOf(productStrings[3].strip()));
+				product.setWarehouse(Integer.valueOf(productStrings[4].strip()));
+				
+				addAndUpdateProduct(product);
+			}else
+				logger.warn("Invalid product data: " + data);
 		});
 		
 	}

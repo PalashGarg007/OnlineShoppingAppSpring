@@ -52,7 +52,7 @@ public class OnlineShoppingAppApplication implements CommandLineRunner{
 //		new Examples().streamExample();
 //		new BackgroundServices(vendorController);
 		
-		System.out.println(new ApiHandler().shopkeeperLogInRequest("sophie_t", "turnerpass").toString());
+//		System.out.println(new ApiHandler().shopkeeperLogInRequest("sophie_t", "turnerpass").toString());
 	}
 
 }

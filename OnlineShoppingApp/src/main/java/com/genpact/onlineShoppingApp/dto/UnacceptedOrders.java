@@ -7,7 +7,7 @@ public class UnacceptedOrders {
 	private String brand;
 	private String category;
 	private Double cost;
-	private Integer id;
+	private Integer id; //order id
 	private Integer quantity;
 	private LocalDate order_date;
 	private Boolean confirmation;

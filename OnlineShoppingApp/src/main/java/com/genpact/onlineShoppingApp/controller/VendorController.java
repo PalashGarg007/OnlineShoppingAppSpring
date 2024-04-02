@@ -33,7 +33,7 @@ public interface VendorController {
 	ResponseEntity<String> setUnacceptedOrders(List<UnacceptedOrders> unacceptedOrders);
 	
 	/*Search products by name or category or brand*/
-	ResponseEntity<List<Product>> searchProducts(String condition, Integer PageNo);
+	ResponseEntity<List<Product>> searchProducts(String condition);
 	
 	/*add and update products by file*/
 	ResponseEntity<String> addAndUpdateProductsByFile() throws IOException;

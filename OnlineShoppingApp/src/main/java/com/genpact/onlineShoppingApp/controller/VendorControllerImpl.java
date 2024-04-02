@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.List;
-import java.util.Scanner;
 import java.util.function.Function;
 
 import org.slf4j.Logger;
@@ -44,7 +44,7 @@ public class VendorControllerImpl implements VendorController {
 	@PostMapping(value = "/newAccount", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Shopkeeper> createAccount(@RequestBody Shopkeeper shopkeeper) throws IOException {
 		Function<String, Boolean> nameCondition = (name) ->(
-				name.matches("^([a-zA-Z])(?([ ][a-zA-Z])){1,}$"));
+				name.matches("^[a-zA-Z]+(?: [a-zA-Z]+)?$"));
 		
 		Function<String, Boolean> contactCondition = (contact) -> (
 				contact.matches("^\\d{10}$"));
@@ -192,7 +192,7 @@ public class VendorControllerImpl implements VendorController {
 	}
 	
 	@Override
-	@PutMapping(value = "/unacceptableOrders", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = "/unacceptedOrders", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> setUnacceptedOrders(@RequestBody List<UnacceptedOrders> unacceptedOrders) {
 		if(unacceptedOrders.isEmpty())
 			return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(null);
@@ -207,8 +207,8 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@GetMapping(value = "/search={condition}?page={pageNo}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<List<Product>> searchProducts(@PathVariable String condition, @PathVariable Integer pageNo){
+	@GetMapping(value = "/search={condition}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<List<Product>> searchProducts(@PathVariable String condition){
 		List<Product> products = vendorService.searchProducts(condition);
 		
 		return (products.isEmpty())? ResponseEntity.status(HttpStatus.NO_CONTENT).body(null) :
@@ -219,20 +219,18 @@ public class VendorControllerImpl implements VendorController {
 	@PostMapping(value = "/updateByFile")
 	public ResponseEntity<String> addAndUpdateProductsByFile() throws IOException {
 		try {
-			File file = new File("InputProducts.txt");
+			File file = new File("C:\\Users\\gargp\\Desktop\\SpringWork\\OnlineShoppingAppSpring\\InputProducts.txt");
 			if(!file.exists()) {
 				file.createNewFile();
 				
-				FileWriter writer = new FileWriter("InputProducts.txt");
+				FileWriter writer = new FileWriter("C:\\Users\\gargp\\Desktop\\SpringWork\\OnlineShoppingAppSpring\\InputProducts.txt");
 				writer.write("name, brand, category, cost, warehouse");
+				writer.flush();
 				writer.close();
 				return ResponseEntity.status(HttpStatus.CREATED).body("New file created.");
 			}
 			
-			Scanner Reader = new Scanner(file);
-			Reader.nextLine(); //skip first line.
-			vendorService.addAndUpdateProductsByFile(Reader.tokens());
-            Reader.close();
+			vendorService.addAndUpdateProductsByFile(Files.readAllLines(file.toPath()).stream());
 			
 		} catch (FileNotFoundException e) {
 			logger.error(e.getMessage());

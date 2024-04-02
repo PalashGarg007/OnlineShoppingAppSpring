@@ -1,0 +1,11 @@
+name, brand, category, cost, warehouse
+Laptop, Dell, Electronics, 10000, 20
+Smartphone, Apple, Electronics, 8000, 50
+Running Shoes, Nike, Footwear, 1200, 100
+T-shirt, Adidas, Clothing, 300, 40
+Headphones, Sony, Electronics, 1500, 100
+Backpack, North Face, Accessories, 800, 1000
+Watch, Rolex, Accessories, 50000, 90
+Sunglasses, Ray-Ban, Accessories, 2000, 50
+TV, Samsung, Electronics, 12000, 60
+Jeans, Levi's, Clothing, 500, 100
