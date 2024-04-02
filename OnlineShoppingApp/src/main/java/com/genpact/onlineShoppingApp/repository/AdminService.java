@@ -22,7 +22,5 @@ public interface AdminService {
 	
 	/*Update discount by id*/
 	Payment updateDiscountById(Payment payment);
-
-	Payment removePaymentById(Integer id);
 	
 }

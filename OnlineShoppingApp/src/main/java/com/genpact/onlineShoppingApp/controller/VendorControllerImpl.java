@@ -6,8 +6,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.function.Function;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.genpact.onlineShoppingApp.Validation;
 import com.genpact.onlineShoppingApp.dto.UnacceptedOrders;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.entity.Shopkeeper;
@@ -35,38 +34,35 @@ public class VendorControllerImpl implements VendorController {
 	@Autowired
 	private VendorService vendorService;
 	
-	private Logger logger = LoggerFactory.getLogger(VendorControllerImpl.class);
+	@Autowired
+	private Validation validation;
 	
 	@Autowired
 	private Views views;
 	
+	private Logger logger = LoggerFactory.getLogger(VendorControllerImpl.class);
+	
+	public final String CREATE_ACCOUNT_URL = "/newAccount";
+	public final String lOGIN_URLString = "/logIn";
+	public final String ADD_AND_UPDATE_PRODUCTS_URL = "/product/addProduct";
+	public final String GET_PRODUCTS_URL = "products/page={pageNumber}";
+	public final String CHANGE_PERSONAL_INFORMATION_URL = "/changePersonalInformation";
+	public final String GET_UNACCEPTED_ORDERS_URL = "/getUnacceptedOrders/page={pageNumber}";
+	public final String SET_UNACCEPTED_ORDERS_URL = "/setUnacceptedOrders";
+	public final String SEARCH_PRODUCTS_URL = "/search={condition}";
+	public final String ADD_AND_UPDATE_PRODUCTS_BY_FILE_URL = "/updateByFile";
+	public final String ADD_AND_UPDATE_PRODUCTS_FILE_PATH = "C:\\Users\\gargp\\Desktop\\SpringWork\\OnlineShoppingAppSpring\\InputProducts.txt";
+	
 	@Override
-	@PostMapping(value = "/newAccount", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Shopkeeper> createAccount(@RequestBody Shopkeeper shopkeeper) throws IOException {
-		Function<String, Boolean> nameCondition = (name) ->(
-				name.matches("^[a-zA-Z]+(?: [a-zA-Z]+)?$"));
-		
-		Function<String, Boolean> contactCondition = (contact) -> (
-				contact.matches("^\\d{10}$"));
-		
-		Function<String, Boolean> emailCondition = (email) -> (
-				(email.matches("""
-                        ^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@\
-                        [^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$\
-                        """)));
-		
-		Function<String, Boolean> passwordCondition = (password) -> (
-				(password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$")));
-		
-		if(!nameCondition.apply(shopkeeper.getName())) {
+	@PostMapping(value = CREATE_ACCOUNT_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+ 	public ResponseEntity<Shopkeeper> createAccount(@RequestBody Shopkeeper shopkeeper) throws IOException {
+		if(!validation.nameValidation(shopkeeper.getName()))
 			throw new InvalidInputException("Name can only have characters.");
-		}
 		
-		if(!contactCondition.apply(shopkeeper.getContact())) {
+		if(!validation.contactValidation(shopkeeper.getContact()))
 			throw new InvalidInputException("Enter a valid 10 digits Contact Number.");
-		}
 		
-		if(!emailCondition.apply(shopkeeper.getEmail())) {
+		if(!validation.emailValidation(shopkeeper.getEmail()))
 			throw new InvalidInputException("""
                     The following restrictions are imposed in the email address local part:
                     	1. Dot isn’t allowed at the start and end of the local part.
@@ -76,9 +72,8 @@ public class VendorControllerImpl implements VendorController {
                     	1. Hyphen “-” and dot “.” aren’t allowed at the start and end of the domain part.
                     	2. No consecutive dots.
                     """);
-		}
 		
-		if(!passwordCondition.apply(shopkeeper.getPassword())) {
+		if(!validation.passwordValidation(shopkeeper.getPassword()))
 			throw new InvalidInputException("""
                     Password must contain:
                     	1. At least one Special character.
@@ -87,7 +82,6 @@ public class VendorControllerImpl implements VendorController {
                     	4. At least one lower and one upper cahracter.
                     	5. Does't contain space, tabs, etc.
                     """);
-		}
 		
 		Shopkeeper newShopkeeper = vendorService.createAccount(shopkeeper);
 		
@@ -100,8 +94,8 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@PostMapping(value = "/logIn", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Shopkeeper> shopkeeperLogin(@RequestBody Shopkeeper loginDetails) throws IOException {		
+	@PostMapping(value = lOGIN_URLString, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Shopkeeper> shopkeeperLogin(@RequestBody Shopkeeper loginDetails) throws IOException {
 		Shopkeeper shopkeeper = vendorService.shopkeeperLogin(loginDetails.getUserName(), loginDetails.getPassword());
 		
 		logger.info((shopkeeper!=null)?views.dotedBox("Login Successfully :)") :
@@ -113,12 +107,12 @@ public class VendorControllerImpl implements VendorController {
 	}
 	
 	@Override
-	@PostMapping(value = "/product/addProduct", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value = ADD_AND_UPDATE_PRODUCTS_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Product> addAndUpdateProduct(@RequestBody Product product) throws IOException {
-		if(product.getCost()<=0)
+		if(!validation.costValidition(product.getCost()))
 			throw new InvalidInputException("Invalid cost.");
 		
-		if(product.getWarehouse()<0)
+		if(!validation.warehouseValidation(product.getWarehouse()))
 			throw new InvalidInputException("No of products in the warehouse can't be negative.");
 		
 		Product newProduct = vendorService.addAndUpdateProduct(product);
@@ -132,7 +126,7 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@GetMapping(value = "products/page={pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = GET_PRODUCTS_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Product>> getProducts(@PathVariable Integer pageNumber) {
 		Page<Product> currentPage = vendorService.getProducts(pageNumber, 5);
 		List<Product> products = currentPage.getContent();
@@ -145,28 +139,16 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@PutMapping(value = "/changePersonalInformation", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = CHANGE_PERSONAL_INFORMATION_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Shopkeeper> changePersonalInformadtion(@RequestBody Shopkeeper shopkeeper) {
-		Function<String, Boolean> contactCondition = (contact) -> (
-				contact.matches("^\\d{10}$"));
+		if(shopkeeper.getContact()!=null && !validation.contactValidation(shopkeeper.getContact()))
+			throw new InvalidInputException("Enter a valid contact number.");
 		
-		Function<String, Boolean> emailCondition = (email) -> (
-				(email.matches("""
-                        ^(?=.{1,64}@)[A-Za-z0-9_-]+(\\.[A-Za-z0-9_-]+)*@\
-                        [^-][A-Za-z0-9-]+(\\.[A-Za-z0-9-]+)*(\\.[A-Za-z]{2,})$\
-                        """)));
+		if(shopkeeper.getEmail()!=null && !validation.emailValidation(shopkeeper.getEmail()))
+			throw new InvalidInputException("Invalid Email ID.");
 		
-		Function<String, Boolean> passwordCondition = (password) -> (
-				(password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,}$")));
-		
-		if(shopkeeper.getContact()!=null && !contactCondition.apply(shopkeeper.getContact()))
-				throw new InvalidInputException("Enter a valid contact number.");
-		
-		if(shopkeeper.getEmail()!=null && !emailCondition.apply(shopkeeper.getEmail()))
-				throw new InvalidInputException("Invalid Email ID.");
-		
-		if(shopkeeper.getPassword()!=null && !passwordCondition.apply(shopkeeper.getPassword()))
-                throw new InvalidInputException("Enter a valid password");
+		if(shopkeeper.getPassword()!=null && !validation.passwordValidation(shopkeeper.getPassword()))
+			throw new InvalidInputException("Enter a valid password");
 		
 		Shopkeeper updatedShopkeeper = vendorService.cahngePersonalInformadtion(
 				shopkeeper.getContact(), shopkeeper.getEmail(), shopkeeper.getPassword());
@@ -180,7 +162,7 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@GetMapping(value = "/unAcceptedOrders/page={pageNumber}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = GET_UNACCEPTED_ORDERS_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<UnacceptedOrders>> getUnacceptedOrders(@PathVariable Integer pageNumber){
 		Page<UnacceptedOrders> currentPage = vendorService.getUnacceptedOrders(pageNumber, 5);
 		List<UnacceptedOrders> unacceptedOrders = currentPage.getContent();
@@ -192,13 +174,13 @@ public class VendorControllerImpl implements VendorController {
 	}
 	
 	@Override
-	@PutMapping(value = "/unacceptedOrders", produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = SET_UNACCEPTED_ORDERS_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> setUnacceptedOrders(@RequestBody List<UnacceptedOrders> unacceptedOrders) {
 		if(unacceptedOrders.isEmpty())
 			return ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(null);
 		
 		unacceptedOrders = unacceptedOrders.stream()
-				.filter(s -> s.getConfirmation()==true)
+				.filter(orders -> orders.getConfirmation()==true)
 				.toList();
 		
 		vendorService.setUnacceptedOrders(unacceptedOrders);
@@ -207,7 +189,7 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@GetMapping(value = "/search={condition}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = SEARCH_PRODUCTS_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<Product>> searchProducts(@PathVariable String condition){
 		List<Product> products = vendorService.searchProducts(condition);
 		
@@ -216,14 +198,14 @@ public class VendorControllerImpl implements VendorController {
 	}
 	
 	@Override
-	@PostMapping(value = "/updateByFile")
+	@PostMapping(value = ADD_AND_UPDATE_PRODUCTS_BY_FILE_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> addAndUpdateProductsByFile() throws IOException {
 		try {
-			File file = new File("C:\\Users\\gargp\\Desktop\\SpringWork\\OnlineShoppingAppSpring\\InputProducts.txt");
+			File file = new File(ADD_AND_UPDATE_PRODUCTS_FILE_PATH);
 			if(!file.exists()) {
 				file.createNewFile();
 				
-				FileWriter writer = new FileWriter("C:\\Users\\gargp\\Desktop\\SpringWork\\OnlineShoppingAppSpring\\InputProducts.txt");
+				FileWriter writer = new FileWriter(ADD_AND_UPDATE_PRODUCTS_FILE_PATH);
 				writer.write("name, brand, category, cost, warehouse");
 				writer.flush();
 				writer.close();
@@ -238,4 +220,5 @@ public class VendorControllerImpl implements VendorController {
 		
 		return ResponseEntity.ok("Products added successfully.");
 	}
+	
 }

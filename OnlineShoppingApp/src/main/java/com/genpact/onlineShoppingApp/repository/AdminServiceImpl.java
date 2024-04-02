@@ -68,16 +68,4 @@ public class AdminServiceImpl implements AdminService {
 		return modifiedPayment;
 	}
 
-	@Override
-	@Transactional
-	public Payment removePaymentById(Integer id) {
-		Payment payment = null;
-		if(paymentRepository.existsById(id)) {
-			payment = paymentRepository.getReferenceById(id);
-			paymentRepository.deleteById(id);
-		}
-		
-		return payment;
-	}
-
 }

@@ -28,6 +28,4 @@ public interface AdminController {
 	/*Update the discount by taking the payment_id*/
 	ResponseEntity<Payment> updateDiscountById(Payment payment) throws IOException;
 	
-	/*Remove an Payment with it's id*/
-	ResponseEntity<Payment> removePaymentById(Integer id) throws IOException;
 }
