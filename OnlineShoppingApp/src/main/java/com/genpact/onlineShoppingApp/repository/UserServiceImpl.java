@@ -1,5 +1,6 @@
 package com.genpact.onlineShoppingApp.repository;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,6 +16,8 @@ import com.genpact.onlineShoppingApp.entity.CartId;
 import com.genpact.onlineShoppingApp.entity.Customer;
 import com.genpact.onlineShoppingApp.entity.Favorite;
 import com.genpact.onlineShoppingApp.entity.FavoriteId;
+import com.genpact.onlineShoppingApp.entity.Orders;
+import com.genpact.onlineShoppingApp.entity.Payment;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.exception.InvalidInputException;
 import com.genpact.onlineShoppingApp.exception.ProductOutOfStockException;
@@ -35,6 +38,12 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private CartRepository cartRepository;
+	
+	@Autowired
+	private OrdersRepository ordersRepository;
+	
+	@Autowired
+	private PaymentRepository paymentRepository;
 	
 	private Customer currentCustomer;
 	
@@ -193,4 +202,32 @@ public class UserServiceImpl implements UserService {
 	}
 
 	
+	@Override
+	@Async
+	public Integer buyCart(Integer payId) {
+		List<Cart> cartList = cartRepository.findByCid(currentCustomer.getId());
+		Payment payment = paymentRepository.findById(payId).orElse(null);
+		
+		if(payment==null)
+			throw new ResourceNotFoundException("can't find payment with id "+ payId);
+		
+		cartList.forEach(cart-> {
+			Product product = productRepository.getReferenceById(cart.getPid());
+			
+			if(product.getWarehouse()>=cart.getQuantity()) {
+				ordersRepository.save(new Orders(currentCustomer.getId(), product.getId(),
+						product.getCost()*cart.getQuantity()*(1 - payment.getDiscount()/100),
+						cart.getQuantity(), LocalDate.now(), null, payId, false));
+				
+				removeFromCart(product.getId());
+				
+				product.setWarehouse(product.getWarehouse()-cart.getQuantity());
+				product.setPurchased(product.getPurchased()+cart.getQuantity());
+				productRepository.save(product);
+			}
+		});
+		
+		return 1;
+	}
+
 }

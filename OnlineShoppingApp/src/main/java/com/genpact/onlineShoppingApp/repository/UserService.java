@@ -30,4 +30,6 @@ public interface UserService {
 
 	Integer removeFromCart(Integer pid);
 
+	Integer buyCart(Integer payId);
+
 }

@@ -14,4 +14,6 @@ public interface CartRepository extends JpaRepository<Cart, CartId>{
 
 	List<Cart> findByCid(Integer cid, Pageable pageable);
 
+	List<Cart> findByCid(Integer cid);
+
 }

@@ -52,6 +52,10 @@ public interface UserController {
 	
 	//track order
 	
+	//give review
+	
+	//view review
+	
 	//download transcript
 	
 	

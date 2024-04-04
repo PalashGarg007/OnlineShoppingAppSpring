@@ -15,17 +15,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.service.annotation.PatchExchange;
 
 import com.genpact.onlineShoppingApp.Validation;
 import com.genpact.onlineShoppingApp.entity.Customer;
 import com.genpact.onlineShoppingApp.entity.Product;
 import com.genpact.onlineShoppingApp.exception.InvalidInputException;
+import com.genpact.onlineShoppingApp.repository.ProductRepository;
 import com.genpact.onlineShoppingApp.repository.UserService;
 
 @RestController
@@ -141,7 +145,7 @@ public class UserControllerImpl implements UserController {
 	}
 	
 	@Override
-	@PutMapping(value = CHANGE_PERSONAL_INFORMATION_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PatchMapping(value = CHANGE_PERSONAL_INFORMATION_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Customer> changePersonalInformation(@RequestBody Customer customer) {
 		if(customer.getContact()!=null && !validation.contactValidation(customer.getContact()))
 			throw new InvalidInputException("Enter a valid contact number.");
@@ -212,7 +216,7 @@ public class UserControllerImpl implements UserController {
 	}
 
 	@Override
-	@PostMapping(value = ADD_TO_CART_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(value = ADD_TO_CART_URL, produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<String> addToCart(@PathVariable Integer pid, @PathVariable Integer quantity) {
 		Integer result = userService.addToCart(pid, quantity);
 		
@@ -230,9 +234,12 @@ public class UserControllerImpl implements UserController {
 
 	
 	@Override
-	public ResponseEntity<String> buyCart(Integer payId) {
-		// TODO Auto-generated method stub
-		return null;
+	@PatchMapping(value = BUY_CART_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<String> buyCart(@PathVariable Integer payId) {
+		Integer result = userService.buyCart(payId);
+		
+		return (result>0)? ResponseEntity.ok(null): ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body(null);
+		
 	}
 	
 }
