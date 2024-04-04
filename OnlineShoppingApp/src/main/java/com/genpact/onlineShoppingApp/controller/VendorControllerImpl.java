@@ -43,7 +43,7 @@ public class VendorControllerImpl implements VendorController {
 	private Logger logger = LoggerFactory.getLogger(VendorControllerImpl.class);
 	
 	public final String CREATE_ACCOUNT_URL = "/newAccount";
-	public final String lOGIN_URLString = "/logIn";
+	public final String LOGIN_URL = "/logIn";
 	public final String ADD_AND_UPDATE_PRODUCTS_URL = "/product/addProduct";
 	public final String GET_PRODUCTS_URL = "products/page={pageNumber}";
 	public final String CHANGE_PERSONAL_INFORMATION_URL = "/changePersonalInformation";
@@ -94,8 +94,8 @@ public class VendorControllerImpl implements VendorController {
 	}
 
 	@Override
-	@PostMapping(value = lOGIN_URLString, produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Shopkeeper> shopkeeperLogin(@RequestBody Shopkeeper loginDetails) throws IOException {
+	@PostMapping(value = LOGIN_URL, produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Shopkeeper> shopkeeperLogin(@RequestBody Shopkeeper loginDetails){
 		Shopkeeper shopkeeper = vendorService.shopkeeperLogin(loginDetails.getUserName(), loginDetails.getPassword());
 		
 		logger.info((shopkeeper!=null)?views.dotedBox("Login Successfully :)") :
@@ -156,7 +156,7 @@ public class VendorControllerImpl implements VendorController {
 		logger.info((updatedShopkeeper!=null)? views.dotedBox("Shopkeeper updated successfully :)") :
 				views.dotedBox("Shopkeeper not updated successfully :("));
 		
-		return (shopkeeper!=null)? ResponseEntity.ok(updatedShopkeeper) :
+		return (updatedShopkeeper!=null)? ResponseEntity.ok(updatedShopkeeper) :
 				ResponseEntity.status(HttpStatus.NOT_MODIFIED).body(null);
 		
 	}

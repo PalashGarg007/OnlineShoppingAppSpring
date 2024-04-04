@@ -38,15 +38,12 @@ public class VendorServiceImpl implements VendorService{
 	@Override
 	@Transactional
 	public Shopkeeper createAccount(Shopkeeper shopkeeper) {
-		if(!shopkeeperRepository.findByUserName(shopkeeper.getUserName()).isEmpty())
-			throw new InvalidInputException("UserName already exist");
-		
 		Shopkeeper newShopkeeper = new Shopkeeper(shopkeeper.getName(), shopkeeper.getContact(),
 				shopkeeper.getEmail(), shopkeeper.getUserName(), shopkeeper.getPassword());
 		try {
 			currentShopkeeper = shopkeeperRepository.save(newShopkeeper);
 		} catch (Exception e) {
-			throw new InvalidInputException("contact alrady exist.", e);
+			throw new InvalidInputException("A field is repeating alrady exist: " + e.getMessage());
 		}
 		
 		return currentShopkeeper;
@@ -106,7 +103,6 @@ public class VendorServiceImpl implements VendorService{
 
 	@Override
 	public Shopkeeper cahngePersonalInformadtion(String contact, String email, String password) {
-
 		if(!contact.isEmpty())
 			currentShopkeeper.setContact(contact);
 		if(!email.isEmpty())
@@ -151,7 +147,7 @@ public class VendorServiceImpl implements VendorService{
 	@Override
 	public List<Product> searchProducts(String condition) {
 		List<Product> products = new LinkedList<>();
-		String[] conditions = condition.split(" ");
+		String[] conditions = condition.split("+");
 		
 		for(String minCondition: conditions) {
 			products.addAll(productRepository.findByAllIgnoringCaseNameOrCategoryOrBrandOrderByCost(minCondition, minCondition, minCondition));
