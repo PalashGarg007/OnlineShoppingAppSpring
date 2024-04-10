@@ -118,7 +118,7 @@ public class VendorServiceImpl implements VendorService{
 	@Override
 	public Page<UnacceptedOrders> getUnacceptedOrders(Integer pageNumber, Integer pageSize) {
 		PageRequest pageRequest = PageRequest.of(pageNumber, pageSize);
-		return ordersRepository.findByIdAndConfirmationFalse(currentShopkeeper.getId(), pageRequest);
+		return ordersRepository.findBySidAndConfirmationFalse(currentShopkeeper.getId(), pageRequest);
 	}
 	
 	@Override

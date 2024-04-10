@@ -1,11 +1,16 @@
 package com.genpact.onlineShoppingApp.controller;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import com.genpact.onlineShoppingApp.dto.ReviewWithoutOrderId;
+import com.genpact.onlineShoppingApp.dto.TranscriptDto;
 import com.genpact.onlineShoppingApp.entity.Customer;
+import com.genpact.onlineShoppingApp.entity.Orders;
 import com.genpact.onlineShoppingApp.entity.Product;
+import com.genpact.onlineShoppingApp.entity.Review;
 
 public interface UserController {
 
@@ -49,14 +54,21 @@ public interface UserController {
 	ResponseEntity<String> buyCart(Integer payId);
 	
 	//order history
+	ResponseEntity<List<Orders>> getOrderHistory(Integer pageNo);
 	
 	//track order
+	//TODO: Make a track order microservices.
+	
+	//payment
+	//TODO: Make a payment microservices.
+	
+	//get review of product
+	ResponseEntity<List<ReviewWithoutOrderId>> getReviewOfProduct(Integer pid, Integer pageNo); 
 	
 	//give review
-	
-	//view review
+	ResponseEntity<String> giveReview(Integer oid, Review review);
 	
 	//download transcript
-	
+	ResponseEntity<TranscriptDto> downloadTranscript(Integer oid) throws IOException;
 	
 }

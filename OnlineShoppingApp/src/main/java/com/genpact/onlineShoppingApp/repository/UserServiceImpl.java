@@ -11,6 +11,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import com.genpact.onlineShoppingApp.dto.ReviewWithoutOrderId;
+import com.genpact.onlineShoppingApp.dto.TranscriptDto;
 import com.genpact.onlineShoppingApp.entity.Cart;
 import com.genpact.onlineShoppingApp.entity.CartId;
 import com.genpact.onlineShoppingApp.entity.Customer;
@@ -19,6 +21,7 @@ import com.genpact.onlineShoppingApp.entity.FavoriteId;
 import com.genpact.onlineShoppingApp.entity.Orders;
 import com.genpact.onlineShoppingApp.entity.Payment;
 import com.genpact.onlineShoppingApp.entity.Product;
+import com.genpact.onlineShoppingApp.entity.Review;
 import com.genpact.onlineShoppingApp.exception.InvalidInputException;
 import com.genpact.onlineShoppingApp.exception.ProductOutOfStockException;
 import com.genpact.onlineShoppingApp.exception.ResourceNotFoundException;
@@ -32,6 +35,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private ProductRepository productRepository;
+	
+	@Autowired
+	private ReviewRepository reviewRepository;
 
 	@Autowired
 	private FavoriteRepository favoriteRepository;
@@ -157,7 +163,6 @@ public class UserServiceImpl implements UserService {
 		return result;
 	}
 
-	
 	@Override
 	@Async
 	public List<Product> getCart(Integer pageNo, Integer pageSize) {
@@ -185,7 +190,6 @@ public class UserServiceImpl implements UserService {
 		return (result>0)? 1: 0;
 	}
 
-	
 	@Override
 	public Integer removeFromCart(Integer pid) {
 		Integer result = 0;
@@ -201,7 +205,6 @@ public class UserServiceImpl implements UserService {
 		return result;
 	}
 
-	
 	@Override
 	@Async
 	public Integer buyCart(Integer payId) {
@@ -228,6 +231,50 @@ public class UserServiceImpl implements UserService {
 		});
 		
 		return 1;
+	}
+
+	
+	@Override
+	public List<Orders> getOrderHistory(Integer pageNo, Integer pageSize) {
+		PageRequest pageRequest = PageRequest.of(pageNo, pageSize);
+		
+		return ordersRepository.findByCidOrderByOrderDateDesc(currentCustomer.getId(), pageRequest);
+	}
+
+	
+	@Override
+	public List<ReviewWithoutOrderId> getReviewOfProduct(Integer pid, Integer pageNo, Integer pageSize) {
+		List<ReviewWithoutOrderId> reviews = reviewRepository
+				.getReviewByPid(pid, pageNo*pageSize, pageSize);
+		return reviews;
+	}
+
+	@Override
+	public Integer giveReview(Review review) {
+		if(review.getReview().isBlank() || review.getRating()<0 || review.getRating()>5)
+			return 0;
+		
+		Orders order = ordersRepository.findById(review.getId()).get();
+		Product product = productRepository.findById(order.getPid()).get();
+		Integer noOfReviews = reviewRepository.noOfReviewsOfProduct(order.getPid());
+		
+		reviewRepository.save(review);
+		
+		product.setRating((product.getRating() * noOfReviews + review.getRating()) / (noOfReviews + 1));
+		productRepository.save(product);
+		
+		return 1;
+	}
+
+	@Override
+	public TranscriptDto downloadTranscript(Integer oid) {
+		Orders orders = ordersRepository.getReferenceById(oid);
+		Product product = orders.getProduct();
+		Payment payment = orders.getPayment();
+		
+		return new TranscriptDto(oid, orders.getQuantity(),
+				orders.getAmount(), orders.getOrderDate(),
+				product.getName(), product.getCost(), payment.getDiscount());
 	}
 
 }

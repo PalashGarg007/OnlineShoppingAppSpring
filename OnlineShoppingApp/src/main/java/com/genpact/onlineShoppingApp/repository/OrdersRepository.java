@@ -1,5 +1,7 @@
 package com.genpact.onlineShoppingApp.repository;
 
+import java.util.List;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,8 +20,10 @@ public interface OrdersRepository extends JpaRepository<Orders, Integer> {
 			"c.contact, c.address, o.amount FROM orders o " +
 			"LEFT JOIN product p ON p.id = o.pid " +
 			"LEFT JOIN customer c ON c.id = o.cid " +
-			"WHERE p.sid=:id ORDER BY o.id DESC",
+			"WHERE p.sid=:sid ORDER BY o.id DESC",
 			nativeQuery = true)
-	Page<UnacceptedOrders> findByIdAndConfirmationFalse(Integer id, Pageable pageable);
+	Page<UnacceptedOrders> findBySidAndConfirmationFalse(Integer sid, Pageable pageable);
+	
+	List<Orders> findByCidOrderByOrderDateDesc(Integer cid, Pageable pageable);
 	
 }

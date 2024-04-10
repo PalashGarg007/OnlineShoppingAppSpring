@@ -41,6 +41,9 @@ public class Orders {
     
     private boolean confirmation;
     
+    //private String reviewId;
+    //private String address;
+    
     @ManyToOne
     @JoinColumn(name = "cid", referencedColumnName = "id", updatable = false, insertable=false)
     private Customer customer;
@@ -142,6 +145,14 @@ public class Orders {
 
     public void setConfirmation(boolean confirmation) {
         this.confirmation = confirmation;
+    }
+    
+    public Product getProduct() {
+    	return this.product;
+    }
+    
+    public Payment getPayment() {
+    	return this.payment;
     }
 
     @Override

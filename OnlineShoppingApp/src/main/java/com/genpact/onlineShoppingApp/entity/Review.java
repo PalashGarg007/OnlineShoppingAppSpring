@@ -21,7 +21,8 @@ public class Review {
     }
     
     @OneToOne(optional = false)
-    @JoinColumn(name = "id", referencedColumnName = "id", unique = true, nullable = false, updatable = false)
+    @JoinColumn(name = "id", referencedColumnName = "id", unique = true, nullable = false,
+    updatable = false)
     private Orders orders;
 
     public Review(Integer id, Double rating, String review) {

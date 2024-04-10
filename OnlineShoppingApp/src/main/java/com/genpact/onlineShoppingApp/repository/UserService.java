@@ -3,8 +3,12 @@ package com.genpact.onlineShoppingApp.repository;
 import java.util.List;
 import java.util.Map;
 
+import com.genpact.onlineShoppingApp.dto.ReviewWithoutOrderId;
+import com.genpact.onlineShoppingApp.dto.TranscriptDto;
 import com.genpact.onlineShoppingApp.entity.Customer;
+import com.genpact.onlineShoppingApp.entity.Orders;
 import com.genpact.onlineShoppingApp.entity.Product;
+import com.genpact.onlineShoppingApp.entity.Review;
 
 public interface UserService {
 
@@ -31,5 +35,13 @@ public interface UserService {
 	Integer removeFromCart(Integer pid);
 
 	Integer buyCart(Integer payId);
+
+	List<Orders> getOrderHistory(Integer pageNo, Integer pageSize);
+
+	List<ReviewWithoutOrderId> getReviewOfProduct(Integer pid, Integer pageNo, Integer pageSize);
+
+	Integer giveReview(Review review);
+
+	TranscriptDto downloadTranscript(Integer oid);
 
 }
